@@ -15,6 +15,7 @@ def node_edge_trans(Metrix, node):
                 edge.append(('{}'.format(node[x]),'{}'.format(node[y])))
     return edge
 
+123123
 while 1:
     Parallelism = input("请输入DAG的并行度：")
     print("你输入的内容是: ", Parallelism)
