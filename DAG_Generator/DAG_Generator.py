@@ -223,9 +223,9 @@ if __name__ == "__main__":
     # 2 最短路径：
     shortest_path = list(nx.all_shortest_paths(G.G, 0, G.task_num - 1))
     print('DAG的最短路径：{0}'.format(len(shortest_path)))
-
     for path in shortest_path:
         print(path)
+        
     # 3.node_num节点的前驱、后继、祖先、后代    # 完成；
     for self_node in G.G.nodes(data=True):
         print('node_num=:{0}'.format(self_node))
