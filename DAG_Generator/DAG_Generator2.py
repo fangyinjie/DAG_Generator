@@ -15,10 +15,8 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from collections import defaultdict
+
 # Class: DAG (Directed Acyclic Graph Task)
-
-
 class DAG:
     #####################################
     #   DAG 参数
@@ -83,8 +81,6 @@ class DAG:
     #   获取DAG的并行度和关键路径长度
     #   DAG generator 算法4#
     #####################################
-
-
     def dag_param_critical_update(self):
         # 关键路径
         node_list = nx.dag_longest_path(self.G)
@@ -97,17 +93,7 @@ class DAG:
         self.parallelism = max(app)
         print('关键路径：{0}'.format(node_list))
         print('拓扑分层：{0}'.format(rank_list))
-        pp1 = nx.dag_to_branching(self.G)
-        # sources = {}            #
-        sources = defaultdict(set)
-        for v, source in pp1.nodes(data="source"):
-            sources[source].add(v)
-        # anti = nx.antichains(G.get_graph(), topo_order=None)
-        print("antichains", list(nx.antichains(self.G)))    # 从DAG中生成antichains；
-        print("sources", sources)  # 从DAG中生成antichains；
-        re_rank_list = [sorted(generation) for generation in nx.topological_generations(nx.DiGraph.reverse(self.G))]
-        re_rank_list.reverse()
-        print('反向拓扑分层：{0}'.format(re_rank_list))
+
     #####################################
     #   根据DAG的节点num打印节点的属性；
     #   def node_property
@@ -184,7 +170,7 @@ class DAG:
                 k = p_list[node_rank]
                 color = '#1f78b4'
             node_map.append(node_xx[0])
-            position_map.append([100 * node_rank / self.Critical_path, 100 * k / self.parallelism])
+            position_map.append([100 * node_rank / self.Critical_path , 100 * k / self.parallelism])
             str_map.append('ID={0} \n rank={1} \n critic={2} \n WCET={3}'.format(node_xx[1].get('Node_ID'),
                                                                                        node_xx[1].get('rank'),
                                                                                        node_xx[1].get('critic'),
@@ -250,18 +236,18 @@ class DAG:
     #####################################
     def user_defined_dag(self):
         # 节点号； 节点名； 节点优权重； 节点优先级
-        HE_2019_nodes = [[1, 'V1', 1, 1],
-                         [2, 'V2', 7, 5],
-                         [3, 'V3', 3, 6],
-                         [4, 'V4', 3, 7],
-                         [5, 'V5', 6, 2],
-                         [6, 'V6', 9, 3],
-                         [7, 'V7', 2, 4],
-                         [8, 'V8', 1, 8]]
+        HE_2019_nodes = [[1, 'V1', 1, 1, 1],
+                         [2, 'V2', 3, 7, 5],
+                         [3, 'V3', 3,  3, 6],
+                         [4, 'V4', 3, 3, 7],
+                         [5, 'V5', 2, 6, 2],
+                         [6, 'V6', 2, 9, 3],
+                         [7, 'V7', 3, 2, 4],
+                         [8, 'V8', 4, 1, 8]]
         # for x in self_list:
         # self.G.add_node(0, Node_ID='souce_node', rank=0, critic=False, WCET=1)  # 起始节点（1）；rank=0
         for node_x in HE_2019_nodes:
-            self.G.add_node(node_x[0], Node_ID=node_x[1], rank=0, critic=False, WCET=node_x[2], priority=node_x[3])
+            self.G.add_node(node_x[0], Node_ID=node_x[1], rank=node_x[2], critic=False, WCET=node_x[3], priority=node_x[4])
 
         edges = [(1, 2), (1, 3), (1, 4), (1, 5), (1, 6),
                  (5, 7), (6, 7),
@@ -282,150 +268,10 @@ if __name__ == "__main__":
     G.Critical_path = 6     # int(Critical_path)    # 输入关键路径长度
     G.gen("mine")
     # G.user_defined_dag()
+
     G.graph_node_position_determine()
 
-    G.dag_param_critical_update()
-
-
-    print('G是aperiodic图：{}'.format(nx.is_aperiodic(G.get_graph())))   # 如果`G`是aperiodic(周期的)则返回true；
-    # print(nx.root_to_leaf_paths(G.get_graph()))                       # 在DAG中产生一个root - to - leaf paths
-    # 一个source node；（node_num:0）;
-    # 一个sink   node；（node_num:(task_num+1)）;
-    # 1 critical path 关键路径及节点         # 完成；
-    print('Critical path=:{0}'.format(nx.dag_longest_path(G.G)))  # 关键路径
-    # 2 最短路径：
-    shortest_path = list(nx.all_shortest_paths(G.G, 0, G.task_num - 1))
-    print('DAG的最短路径：{0}'.format(len(shortest_path)))
-    for path in shortest_path:
-        print(path)
-    # d-denscendants 有掉件的独立性；
-    # （1）test_markov_condition(graph):
-    for node in G.G.nodes:
-        parents = set(G.G.predecessors(node))
-        non_descendants = G.G.nodes - nx.descendants(G.G, node) - {node} - parents
-        # Y : G - node的后代节点 - node节点 - node的前驱节点；
-        # X : node节点；
-        # Z : node的前驱节点；
-        assert nx.d_separated(G.G, {node}, non_descendants, parents)
-
-    """Algorithms to characterize the number of triangles in a graph."""
-    # print(nx.triangles(G.G))            # （报错）Compute the number of triangles.
-    # print(nx.average_clustering(G.G))   # 0.0 Compute the average clustering coefficient for the graph G.
-    # print(nx.clustering(G.G))           # 节点：0 Compute the clustering coefficient for nodes.
-    # print(nx.square_clustering(G.G))    # （OK）Compute the squares clustering coefficient for nodes.
-    # print(nx.generalized_degree(G.G))   # （报错）Compute the generalized degree for nodes.
-    """Find the k-cores of a graph."""
-    print("每个vertex的core数:", nx.core_number(G.G))  # Returns the core number for each vertex.
-    # A k-core is a maximal subgraph that contains nodes of degree k or more.
-    print("图G的k-core:", nx.k_core(G.G).edges(data=True))  # Returns the k-core of G.
-    #   The k-shell is the subgraph induced by nodes with core number k.
-    #   That is, nodes in the k-core that are not in the (k+1)-core.
-    print("图G的k_shell:", nx.k_shell(G.G).edges(data=True))  # Returns the k-shell of G.
-    #   The k-crust is the graph G with the edges of the k-core removed
-    #   and isolated nodes found after the removal of edges are also removed.
-    print("图G的k_crust:", nx.k_crust(G.G).edges(data=True))  # Returns the k-crust of G.
-    #   The k-corona is the subgraph of nodes in the k-core which have
-    #   exactly k neighbours in the k-core.
-    #   def k_corona(G, k, core_number=None):
-    print("图G的k_corona:", nx.k_corona(G.G, None).edges(data=True))  # Returns the k-corona of G.
-    """Routines to find the boundary of a set of nodes."""
-    print("edge_boundary:", list(nx.edge_boundary(G.G, [1])))
-    print("node_boundary:", list(nx.node_boundary(G.G, [1])))
-    """Dominance algorithms."""
-    # Returns the immediate dominators of all nodes of a directed graph.
-    print("immediate_dominators:", nx.immediate_dominators(G.G, 0))
-    # Returns the dominance frontiers of all nodes of a directed graph.
-    print("dominance_frontiers:", nx.dominance_frontiers(G.G, 0))
-    """Flow Hierarchy."""
-    # Returns the flow hierarchy of a directed network.
-    # print("flow_hierarchy:", nx.flow_hierarchy(G.G))
-    """Algorithms for finding the lowest common ancestor of trees and DAGs."""
-    # print("tree_all_pairs_lowest_common_ancestor:", list(nx.tree_all_pairs_lowest_common_ancestor(G.G)))
-    # print("lowest_common_ancestor:", list(nx.lowest_common_ancestor(G.G, 2, 3)))
-    print("all_pairs_lowest_common_ancestor:", list(nx.all_pairs_lowest_common_ancestor(G.G)))
-    """Algorithms to calculate reciprocity in a directed graph."""
-    print("reciprocity:", nx.reciprocity(G.G))  # Compute the reciprocity in a directed graph.
-    print("overall_reciprocity:", nx.overall_reciprocity(G.G))  # Compute the reciprocity for the whole graph.
-    """Functions for computing and verifying regular graphs."""
-    # 定义（regular graph）：图中每个节点都有相同的度。regular有向图是指每个顶点的入度和出度相等的图。
-    # is_regular：Determines whether the graph ``G`` is a regular graph.
-    print("Graph is_regular:", nx.is_regular(G.G))
-    # 定义（k-regular graph）：a graph where each vertex has degree k.不支持有向图
-    # is_k_regular：Determines whether the graph ``G`` is a k-regular graph.
-    """Hubs and authorities analysis of graph structure."""
-    # h, a = nx.hits(G.G)   # Returns HITS hubs and authorities values for nodes.
-    print("HITS hubs and authorities values for nodes:\n", nx.hits(G.G))
-    # Returns the HITS authority matrix.
-    print("authority_matrix:\n", nx.authority_matrix(G.G))
-    # Returns the HITS hub matrix.
-    print("hub_matrix:\n", nx.hub_matrix(G.G))
-    """PageRank analysis of graph structure. """
-    # Returns the PageRank of the nodes in the graph.
-    print("pagerank:\n", nx.pagerank(G.G))
-    # Returns the Google matrix of the graph.
-    print("google_matrix:\n", nx.google_matrix(G.G))
-    # Returns the PageRank of the nodes in the graph.
-    # print("pagerank_numpy:\n", nx.pagerank_numpy(G.G))
-    # Returns the PageRank of the nodes in the graph.
-    # print("pagerank_scipy:\n", nx.pagerank_scipy(G.G))
-    """# tracersal #"""
-    """Basic algorithms for breadth-first searching(BFS) the nodes of a graph."""
-    # Iterate over edges in a breadth-first-search starting at source.
-    print("bfs_edges:\n", list(nx.bfs_edges(G.G, 0)))
-    # Returns an oriented tree constructed from of a breadth-first-search starting at source.
-    print("bfs_tree:\n", list(nx.bfs_tree(G.G, 0)))
-    # Returns an iterator of predecessors in breadth-first-search from source.
-    print("bfs_predecessors:\n", list(nx.bfs_predecessors(G.G, 0)))
-    # Returns an iterator of successors in breadth-first-search from source.
-    print("bfs_successors:\n", list(nx.bfs_successors(G.G, 0)))
-    # Returns all nodes at a fixed `distance` from `source` in `G`.
-    print("descendants_at_distance:\n", list(nx.descendants_at_distance(G.G, 0, G.Critical_path - 2)))
-    """Basic algorithms for depth-first searching(DFS) the nodes of a graph."""
-    # Iterate over edges in a depth-first-search (DFS).
-    print("dfs_edges:\n", list(nx.dfs_edges(G.G, source=0)))
-    # Returns oriented tree constructed from a depth-first-search from source.
-    print("dfs_tree:\n", list(nx.dfs_tree(G.G, source=0)))
-    # Returns dictionary of predecessors in depth-first-search from source.
-    print("dfs_predecessors:\n", list(nx.dfs_predecessors(G.G, source=0)))
-    # Returns dictionary of successors in depth-first-search from source.
-    print("dfs_successors:\n", list(nx.dfs_successors(G.G, source=0)))
-    # Generate nodes in a depth-first-search post-ordering starting at source.
-    print("dfs_postorder_nodes:\n", list(nx.dfs_postorder_nodes(G.G, source=0)))
-    # Iterate over edges in a depth-first-search (DFS) labeled by type.
-    print("dfs_labeled_edges:\n", list(nx.dfs_labeled_edges(G.G, source=0)))
-    """Algorithms for a breadth - first traversal of edges in a graph."""
-    # A directed, breadth-first-search of edges in `G`, beginning at `source`.
-    print("edge_bfs:\n", list(nx.edge_bfs(G.G, source=0)))
-    """Algorithms for a depth - first traversal of edges in a graph."""
-    # A directed, depth-first-search of edges in `G`, beginning at `source`.
-    print("edge_dfs:\n", list(nx.edge_dfs(G.G, source=0)))
-    """Functions for identifying isolate (degree zero) nodes."""
-    # Determines whether a node is an isolate.
-    # def is_isolate(G, n):
-    # Iterator over isolates in the graph.
-    print("isolates:\n", list(nx.isolates(G.G)))
-    # Returns the number of isolates in the graph.
-    print("number_of_isolates:\n", nx.number_of_isolates(G.G))
-
-    # 3.node_num节点的前驱、后继、祖先、后代    # 完成；
-    for self_node in G.G.nodes(data=True):
-        print('node_num=:{0}'.format(self_node))
-        print('\t前驱节点（predecessors）：{0}'.format(list(G.G.predecessors(self_node[0]))))
-        print('\t祖先节点（ancestors）：{0}'.format(nx.ancestors(G.get_graph(), self_node[0])))
-        print('\t后继节点（successors）：{0}'.format(list(G.G.successors(self_node[0]))))
-        print('\t后代节点（descendants）：{0}'.format(nx.descendants(G.get_graph(), self_node[0])))
-        print('\t节点的邻居（neighbors）：{0}'.format(list(nx.neighbors(G.G, self_node[0]))))  # 就是后继节点 successors
-        print('\t节点的度（degree）：{0}'.format(nx.degree(G.G, self_node[0])))  # node 0 with degree 1
-        print('\t节点的入度（in_degree）：{0}'.format(G.G.in_degree(self_node[0])))
-        print('\t节点的出度（out_degree）：{0}'.format(G.G.out_degree(self_node[0])))
-
-    # 4.1 节点的拓扑排序
-    # print('node_topological_sort:{}'.format(list(nx.topological_sort(G.get_graph()))))
-    print('4.1 node_topological_sort:{}'.format(list(nx.topological_sort(G.G))))
-    # 4.2 边的拓扑排序
-    print('4.2 edge_topological_sort:{}'.format(list(nx.topological_sort(nx.line_graph(G.G)))))
-    # 获取ID为node_n的后继节点；     获取ID为node_n的前驱节点；
-    # Makespan                          # 待完成！
+    # G.dag_param_critical_update()
 
     plt.title('DAG generator' +
               '\n Is a DAG:{0}'.format(nx.is_directed_acyclic_graph(G.get_graph())) +  # 检测是否是有向无环图
