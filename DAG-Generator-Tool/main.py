@@ -23,8 +23,8 @@ if __name__ == "__main__":
     print("你输入的内容是: ", G.parallelism)
     G.Critical_path = 8     # int(input("请输入DAG的关键路径长度："))
     print("你输入的内容是: ", G.Critical_path)
-    G.gen("mine")                       # 生成DAG(1)随机
-    # G.user_defined_dag()              # 生成DAG(2)设定
+    G.gen("mine")           # 生成DAG(1)随机
+    # G.user_defined_dag()  # 生成DAG(2)设定
 
     # # # # # 步骤2 DAG赋值 # # # # #
 
