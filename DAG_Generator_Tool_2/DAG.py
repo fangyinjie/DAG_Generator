@@ -10,12 +10,9 @@
 
 from random import randint, random, uniform
 import random as rand
-import os
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-
-from collections import defaultdict
 # Class: DAG (Directed Acyclic Graph Task)
 
 
@@ -47,26 +44,34 @@ class DAG:
     #   param5 其他参数(后期计算)：
     #       param5.1
     #####################################
+
     def __init__(self):
-        self.name           = 'Tau_{null}'  # DAG的名称
+        self.name           = 'Tau_{null}'  # DAG save的名称
+        self.DAG_ID         = '0'           # DAG的名称
         self.G              = nx.DiGraph()  # DAG:-networkX结构
         self.task_num       = 0             # DAG中节点（job）的数量
+        self.Priority       = 1             # 越小等级越高
         # generator mine
         self.parallelism    = 0             # 并行度
         self.Critical_path  = 0             # 关键路径长度
 
+    def __init__(self, Dag, Dag_ID, Priority):
+        self.name           = 'Tau_{null}'  # DAG的名称
+        self.DAG_ID         = Dag_ID        # DAG的名称
+        self.G              = Dag           # DAG:-networkX结构
+        self.task_num       = 0             # DAG中节点（job）的数量
+        self.Priority       = Priority      # 越小等级越高
+        # generator mine
+        self.parallelism    = 0             # 并行度
+        self.Critical_path  = 0             # 关键路径长度
+
+    #   param1.1*                   三种任务的周期属性；
+    Periodically = list(enumerate(['PERIODIC', 'SPORADIC', 'APERIODIC'], start=1))
+    #   param1.2* real_time         三种DAG的实时性包括   {HRT(Hard); SRT(Soft); FRT(Firm)}
+    Real_Time = list(enumerate(['HRT', 'SRT', 'FRT'], start=1))
+
     def get_graph(self):  # 返回G
         return self.G
-
-    def save(self, basefolder="data/"):
-        # create base folder (if not exists)
-        if not os.path.exists(basefolder):
-            os.makedirs(basefolder)
-        nx.write_gpickle(self.G, basefolder + self.name + '.gpickle')   # save graph (gpickle)
-        nx.write_gml(self.G, basefolder + self.name + '.gml')           # save graph (gml)
-
-    def load(self, basefolder="./data/"):
-        pass
 
     def gen(self, algorithm):  # 生成 DAG
         if algorithm == "mine":
@@ -75,21 +80,22 @@ class DAG:
             return 1
         return 0
 
-    #####################################
-    #   分配DAG节点的WCET
-    #   wcet_config
-    #####################################
-    def wcet_config(self):
-        Max_WCET    = 10
-        for node_x in self.G.nodes(data=True):
-            node_x[1]['WCET'] = randint(1, Max_WCET)
+    def get_ready_node_list(self):
+        return [x for x in self.G.nodes(data=True) if (x[1].get('state') == 'ready')]
+
+    # #####################################
+    # #   分配DAG节点的WCET
+    # #   wcet_config
+    # #####################################
+    # def wcet_config(self):
+    #     Max_WCET    = 10
+    #     for node_x in self.G.nodes(data=True):
+    #         node_x[1]['WCET'] = randint(1, Max_WCET)
 
     #####################################
-    #   获取DAG的并行度和关键路径长度
-    #   DAG generator 算法4#
+    #   关键路径配置
     #####################################
-    def dag_param_critical_update(self):
-        print(self.G.edges(data=True))
+    def critical_path_config(self):
         # # # # # （1）配置关键路径 # # # # #
         WCET = nx.get_node_attributes(self.G, 'WCET')
         for edge_x in self.G.edges(data=True):
@@ -98,9 +104,17 @@ class DAG:
         for node_xx in self.G.nodes(data=True):
             if node_xx[0] in node_list:  # 判断是否在关键路径里
                 node_xx[1]['critic'] = True
+        # print('关键路径：{0}'.format(node_list))
+
+    #####################################
+    #   获取DAG的并行度和关键路径长度
+    #   DAG generator 算法4#
+    #####################################
+    def dag_param_critical_update(self):
+        # # # # # （1）配置关键路径 # # # # #
+        node_list = nx.dag_longest_path(self.G, weight='weight')  # 关键路径
         print('关键路径：{0}'.format(node_list))
-        # self.Critical_path = len(node_list)     # 关键路径长度
-        # # # # # （1。2）配置最短路径 # # # # #
+        # # # # # （1.2）配置最短路径 # # # # #
         shortest_path = list(nx.all_shortest_paths(self.G, 0, self.G.number_of_nodes() - 1, weight='weight'))
         print('DAG的最短路径{0}条：'.format(len(shortest_path)))
         for path in shortest_path:
@@ -153,7 +167,7 @@ class DAG:
         """图结构的PageRank分析."""
         print("pagerank:\n", nx.pagerank(self.G))                  # 返回图中节点的PageRank.
         print("google矩阵:\n", nx.google_matrix(self.G))            # 返回图的google矩阵
-        print("pagerank_numpy:\n", nx.pagerank_numpy(self.G))      # 返回图中节点的PageRank。
+        # print("pagerank_numpy:\n", nx.pagerank_numpy(self.G))      # 返回图中节点的PageRank。
         print("pagerank_scipy:\n", nx.pagerank_scipy(self.G))      # 返回图中节点的PageRank。
         """宽度优先搜索(BFS)图节点的基本算法"""
         print("BFS_edges:\n", list(nx.bfs_edges(self.G, 0)))       # 从source开始的宽度优先搜索中对边进行迭代。
@@ -184,7 +198,6 @@ class DAG:
             print('\t节点的邻居（neighbors）：{0}'.format(list(nx.neighbors(self.G, self_node[0]))))  # 就是后继节点 successors
             print('\t节点的度（degree）：{0}'.format(nx.degree(self.G, self_node[0])))  # node 0 with degree 1
             print('\t节点的入度（in_degree）：{0}'.format(self.G.in_degree(self_node[0])))
-            print('\t节点的出度（out_degree）：{0}'.format(self.G.out_degree(self_node[0])))
 
         # pp1 = nx.dag_to_branching(self.G)
         # sources = defaultdict(set)
@@ -197,11 +210,16 @@ class DAG:
         # print("overall_reciprocity:", nx.overall_reciprocity(self.G))  #计算全图的自反性
 
     #####################################
-    #   根据DAG的节点num打印节点的属性；
-    #   def node_property
-    #   param：
-    #       node_number;
+    #   Show DAG
     #####################################
+    def show_dag(self):
+        # 1.打印DAG的ID
+        print("DAG_ID:", self.DAG_ID)
+        # 2.打印节点数量
+        print("DAG_Nodes_num:", self.G.number_of_nodes())
+        # 打印边的数量
+        print("DAG_Edges_num:", self.G.number_of_edges())
+
     def node_property(self, node_number):
         # for node_x in self.G.nodes(data=True):
         node_x = self.G.node[node_number]
@@ -217,6 +235,12 @@ class DAG:
         # print(self.G.nodes(data=True))  # 输出所有可能的DAG结果数量；
         print(self.G.nodes.data(data=True))
         print(self.G.edges.data(data=True))
+
+    #####################################
+    #   get DAG parameter
+    #####################################
+    def get_node_num(self):
+        return self.G.number_of_nodes()
 
     #####################################
     #   Transitive reduction函数
@@ -249,33 +273,11 @@ class DAG:
     #       pos = nx.shell_layout(G.get_graph())                #- shell_layout：     节点在同心圆上分布
     #       pos = nx.spectral_layout(G.get_graph(), scale=15)   #- spectral_layout：  根据图的拉普拉斯特征向量排列节
     #########################################
-    """
     def graph_node_position_determine(self):
         color_map       = []
         n_pos           = {}
         n_map           = {}
-        p_list = np.zeros(self.Critical_path, dtype=int)
-        for node_xx in self.G.nodes(data=True):
-            node_rank = node_xx[1].get('rank')
-            if node_xx[1]['critic']:
-                k = 0
-                color = 'green'
-            else:
-                p_list[node_rank] += 1
-                k = p_list[node_rank]
-                color = '#1f78b4'
-            n_pos[node_xx[0]] = [100 * node_rank / self.Critical_path, 50 * k / self.parallelism]
-            n_map[node_xx[0]] = 'ID:{0} \n WCET:{1}'.format(node_xx[1].get('Node_ID'), node_xx[1].get('WCET'))
-            color_map.append(color)
-        nx.draw_networkx_nodes(self.G, n_pos, node_color=color_map, node_size=2500, node_shape='o')    # 绘制节点
-        nx.draw_networkx_edges(self.G, n_pos)                                                          # 绘制边
-        nx.draw_networkx_labels(self.G, n_pos, labels=n_map, font_size=10, font_color='k')             # 标签
-    """
-    def graph_node_position_determine(self):
-        color_map       = []
-        n_pos           = {}
-        n_map           = {}
-
+        c_dicy          = {}
         rank_list = [sorted(generation) for generation in nx.topological_generations(self.G)]
         # print('拓扑分层：{0}'.format(rank_list))
         for z1 in range(0, len(rank_list)):
@@ -283,17 +285,20 @@ class DAG:
                 node_ID = rank_list[z1][z2]
                 sub_node = self.G.node[node_ID]
                 n_pos[node_ID] = [(z1 + 0.5) * 120 / len(rank_list), (z2 + 0.5) * 120 / len(rank_list[z1])]
-                n_map[node_ID] = 'ID:{0} \n WCET:{1}'.format(
-                    sub_node.get('Node_ID'),
-                    sub_node.get('WCET'))
+                n_map[node_ID] = 'ID:{0} \n WCET:{1}'.format(sub_node.get('Node_ID'), sub_node.get('WCET'))
                 if sub_node['critic']:
                     color = 'green'
                 else:
                     color = '#1f78b4'
-                color_map.append(color)
-        nx.draw_networkx_nodes(self.G, n_pos, node_color=color_map, node_size=2500, node_shape='o')    # 绘制节点
+                # color_map.append(color)
+                c_dicy[node_ID] = color
+        # n_pos = dict(sorted(n_pos.items(), key=lambda x: x[0]))
+        # n_map = dict(sorted(n_map.items(), key=lambda x: x[0]))
+        c_dicy = dict(sorted(c_dicy.items(), key=lambda x: x[0]))
+        color_map = [x for x in c_dicy.values()]
+        nx.draw_networkx_nodes(self.G, n_pos, node_color=color_map, node_size=800, node_shape='o')    # 绘制节点
         nx.draw_networkx_edges(self.G, n_pos)                                                         # 绘制边
-        nx.draw_networkx_labels(self.G, n_pos, labels=n_map, font_size=10, font_color='k')             # 标签
+        nx.draw_networkx_labels(self.G, n_pos, labels=n_map, font_size=5, font_color='k')             # 标签
 
     #####################################
     #   DAG generator 算法3#

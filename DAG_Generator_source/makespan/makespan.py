@@ -1,6 +1,6 @@
 import random
-from DAG_Generator.makespan.task import DAGTask, Job
-from DAG_Generator.makespan.processor import Core
+from DAG_Generator_source.makespan.task import DAGTask, Job
+from DAG_Generator_source.makespan.processor import Core
 # from graph import find_longest_path_dfs, find_associative_nodes
 # from rta_alphabeta_new import Eligiblity_Ordering_PA, TPDS_Ordering_PA, EMOSFT_Ordering_PA
 # from rta_alphabeta_new import load_task

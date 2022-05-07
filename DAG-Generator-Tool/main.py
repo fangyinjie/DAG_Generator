@@ -9,7 +9,7 @@
 ################################################################################
 
 import matplotlib.pyplot as plt
-from DAG_Generator import DAG
+from DAG import DAG
 
 if __name__ == "__main__":
 
