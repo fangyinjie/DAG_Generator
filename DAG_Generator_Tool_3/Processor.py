@@ -1,87 +1,93 @@
-"""
-服务站示例
-场景介绍:
-  一个有特定服务提供工作站，客户服务时长不一，工作机器数有限。
-  Client接受服务步骤：Client到达工作站，若有空闲的机器就立刻接受服务，如果没有，就等待直到其他机器空闲下来。
-  每个接受过服务的Client都有一个完成满意度（或者为进度）实时统计服务客户数和完成满意进度。
-"""
-import random
-import simpy
-import networkx as nx
-import DAG_Set
-import Proc
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
-# 可接受输入参数
-RANDOM_SEED = 0     # 不设置
-NUM_MACHINES = 2    # 可以同时处理的机器数（类似工作工位数）
-TIME_CONSUMING = 5  # 单任务耗时 (可以设计成随机数)
-TIME_INTERVAL = 5   # 来车的间隔时间约5分钟   (可以设计成随机数)
-SIM_TIME = 1000     # 仿真总时间
-CLIENT_NUMBER = 2   # 初始时已经占用机器数
+################################################################################
+# Processor
+# Fang YJ
+# Real-Time Systems Group
+# Hunan University HNU
+################################################################################
+
+import Core
+import matplotlib.pyplot as plt
 
 
-class WorkStation(object):
-    """ 一个处理器（Processor），拥有特定数量的资源（core，内存，缓存等）。
-    一个客户首先申请服务。在对应服务时间完成后结束并离开工作站"""
-    def __init__(self, env, num_machines, washtime):
-        self.env = env                                          # simpy实体
-        self.machine = simpy.Resource(env, num_machines)        # 类给env配资源
-        self.washtime = washtime                                # 浪费的时间
-        self.allClient = 0                                      #
-        self.accomplishClient = 0                               #
+class Processor:
+    def __init__(self, processor_list, proccessor_ID):
+        # Core_type = len(processor_list)
+        # Core_type_0_num = processor_list[0]
+        # Core_type_1_num = processor_list[1]
+        # ……
+        # 例如：processor_list = [1,5,6];  这里有三类core，第一类 1个，第二类 5个，第三类 6个
+        self.Processor_ID = proccessor_ID  # 处理器名称,例如：'GD_32'
+        self.Core_list = []
+        self.System_Time = 0
+        for x in range(0, len(processor_list)):
+            for y in range(0, processor_list[x]):
+                self.Core_list.append(Core.Core("{0}_{1}".format(x, y)))  # 初始化所有的core
 
-    def wash(self, car):
-        """ 服务流程 """
-        yield self.env.timeout(random.randint(2, 10))  # 假设服务时间为随机数（2~10）
-        self.allClient += 1
-        per = random.randint(50, 99)
-        print("%s's 任务完成度：%d%%." % (car, per))
-        if per > 80:
-            self.accomplishClient += 1
-        print("工作站服务客户数：%d, 工作站服务达标率：%.2f。"
-              % (self.allClient, float(self.accomplishClient) / float(self.allClient)))
+    # 返回组里所有空闲的核心
+    def Get_Idle_Core_ID(self):
+        # 获取当前空闲的core的列表
+        temp_list = [x for x in self.Core_list if x.Core_State_Is_IDLE]
+        return temp_list
 
+    # 返回组里所有忙碌的核心
+    def Get_Busy_Core_ID(self):
+        # 获取当前空闲的core的列表
+        temp_list = [x for x in self.Core_list if not x.Core_State_Is_IDLE]
+        return temp_list
 
-class Dispatcher_Workspace(object):
-    """ 一个处理器（Processor），拥有特定数量的资源（core，内存，缓存等）。
-    一个客户首先申请服务。在对应服务时间完成后结束并离开工作站"""
-    def __init__(self, env, Dag_Set, core_num):
-        self.env = env                                          # simpy实体
-        self.DAG_Set = Dag_Set
-        self.core_Set = simpy.Resource(env, core_num)           # 类给env配资源
+    def Add_Task_To_Core(self, Core_ID, DAG_ID, Task_ID, Star_Time, WCET, Task_name):
+        # 向Core_ID为Core_ID的核添加任务
+        temp_list = [x for x in self.Core_list if x.Core_ID == Core_ID]
+        if len(temp_list) > 0:
+            temp_list[0].Insert_Task(DAG_ID=DAG_ID, Task_ID=Task_ID,
+                                     Star_Time=Star_Time, WCET=WCET, Task_name=Task_name)
+            return True
+        else:
+            return False
 
+    def Update_Processor_State(self, System_Time):
+        # 向Core_ID为Core_ID的核添加任务
+        if System_Time < self.System_Time:
+            print("System_Time fault \n")
+            return False
 
-def Client(env, name, cw):
-    """ 客户到达动作站接受服务，结束后离开 """
-    print('%s 到达工作站 at %.2f.' % (name, env.now))
-    with cw.machine.request() as request:
-        yield request
-        print('%s 接受服务   at %.2f.' % (name, env.now))
-        yield env.process(cw.wash(name))
-        print('%s 离开服务站 at %.2f.' % (name, env.now))
+        temp_list = [x for x in self.Core_list if x.Last_comleted_Time <= System_Time]
+        if len(temp_list) > 0:
+            for x in temp_list:
+                x.Insert_Core_False()  # 将core设置为空闲；
+            return True
+        else:
+            return False
 
+    def Show_Processor(self):
+        print("\nProcessor_ID:", self.Processor_ID)
+        print("Processor List:")
+        for x in range(0, len(self.Core_list)):
+            self.Core_list[x].Show_Core()
 
-def setup(env,  Dag_Set, core_num):
-    """创建一个工作站，几个初始客户，然后持续有客户到达. 每隔t_inter - 2, t_inter + 3分钟（可以自定义）."""
-    Dispatcher = Dispatcher_Workspace(env, Dag_Set, core_num)
-    for i in range(Dag_Set.get_dag_num()):
-        env.process(Client(env, 'Client_%d' % i, workstation))  # 创建clientNumber个初始客户
-    while Dag_Set.get_node_num() > 0:
-        #
-
-    while True:
-        yield env.timeout(random.randint(t_inter - 2, t_inter + 3))  # 在仿真过程中持续创建客户 3-8分钟
-        i += 1
-        env.process(Client(env, 'Client_%d' % i, workstation))
+    def Show_Processor_makespan(self):
+        for x in range(0, len(self.Core_list)):
+            for y in self.Core_list[x].Core_Running_Task:
+                # (DAG_ID, Task_ID, Start_Time, Finish_Time, WCET)
+                plt.barh(y=x*3, width=y[3], height=2, left=y[2], color='grey', edgecolor='black')
+                plt.text(x=y[4],        y=x*3+1, s=y[4], fontsize=3)
+                plt.text(x=y[2]+y[3]/2, y=x*3,   s='{0}\n{1}'.format(y[0], y[5]), fontsize=3)
+                plt.text(x=y[2],        y=x*3-1, s=y[2], fontsize=3)
+        plt.show()
 
 
 if __name__ == "__main__":
-    print('开始仿真')                 # 初始化并开始仿真任务
-    random.seed()                   # 初始化seed，指定数值的时候方正结果可以复现
-    DagSet = DAG_Set.DAG_Set()
-    DagSet.user_defined_dag()
-    proc = Processor.Processor([3], 'GD_32')
-
-    env = simpy.Environment()       # 创建一个环境并开始仿真
-    env.process(setup(env, DagSet, Processor))     # 开始执行!
-    env.run(until=SIM_TIME)
+    processor = Processor([5, 6], 'GD_32')
+    idle_core_list = processor.Get_Idle_Core_ID()
+    processor.Add_Task_To_Core(idle_core_list[0].Core_ID, DAG_ID=1, Task_ID=1, Star_Time=100, WCET=34556)
+    processor.Add_Task_To_Core(idle_core_list[0].Core_ID, DAG_ID=1, Task_ID=1, Star_Time=100, WCET=34556)
+    processor.Add_Task_To_Core(idle_core_list[0].Core_ID, DAG_ID=1, Task_ID=1, Star_Time=100, WCET=34556)
+    processor.Add_Task_To_Core(idle_core_list[0].Core_ID, DAG_ID=1, Task_ID=1, Star_Time=100, WCET=34556)
+    processor.Add_Task_To_Core(idle_core_list[1].Core_ID, DAG_ID=1, Task_ID=1, Star_Time=100, WCET=34556)
+    processor.Add_Task_To_Core(idle_core_list[2].Core_ID, DAG_ID=1, Task_ID=1, Star_Time=100, WCET=34556)
+    processor.Add_Task_To_Core(idle_core_list[3].Core_ID, DAG_ID=1, Task_ID=1, Star_Time=100, WCET=34556)
+    processor.Update_Processor_State(34656)
+    processor.Show_Processor()
