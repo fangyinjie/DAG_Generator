@@ -13,6 +13,7 @@ import random as rand
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+import rta
 import tqdm
 # Class: DAG (Directed Acyclic Graph Task)
 
@@ -348,24 +349,7 @@ class DAG:
     #####################################
     #   自定义 DAG 算法#
     #####################################
-    def user_defined_dag(self):
-        self.parallelism = 4
-        self.Critical_path = 4
-
-        # test vector
-        G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
-        C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
-        # prio = {1:9,2:8,3:7,4:6,5:5,6:4,7:3,8:2,9:1}
-        prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
-        for node_x in HE_2019_nodes:
-            self.G.add_node(node_x[0], Node_ID=node_x[1], rank=0, critic=False, WCET=node_x[2], priority=node_x[3])
-        edges = [(1, 2), (1, 3), (1, 4), (1, 5), (1, 6),
-                 (5, 7), (6, 7),
-                 (2, 8), (3, 8), (4, 8), (7, 8) ]
-        for edge in edges:
-            self.G.add_edge(edge[0], edge[1], weight=1)
-
-    def user_defined_dag2(self):
+    def user_defined_dag_1(self):
         # 节点号； 节点名； 节点优权重； 节点优先级
         self.parallelism = 4
         self.Critical_path = 4
@@ -387,7 +371,7 @@ class DAG:
         for edge in edges:
             self.G.add_edge(edge[0], edge[1], weight=1)
 
-    def user_defined_dag1(self):
+    def user_defined_dag(self):
         # 节点号； 节点名； 节点优权重； 节点优先级
         self.parallelism = 4
         self.Critical_path = 4
@@ -410,8 +394,7 @@ class DAG:
             self.G.add_edge(edge[0], edge[1], weight=1)
 
     def response_time_analysis(self, core_num):
-        node_list = list(self.G.nodes())
-        paths = list(nx.all_simple_paths(self.G, node_list[0], node_list[-1]))
+        paths = list(nx.all_simple_paths(self.G, 0, self.G.number_of_nodes()-1))
 
         interference_node_list = []
         ret_path_and_rta = []
@@ -461,10 +444,10 @@ if __name__ == "__main__":
     plt.figure()            # (figsize=(100.0, 100.0))
     # plt.subplot(211)
     G = DAG()               # 初始化DAG
-    G.parallelism   = 30     # int(Parallelism)      # 输入并行度
+    G.parallelism   = 5     # int(Parallelism)      # 输入并行度
     G.Critical_path = 8     # int(Critical_path)    # 输入关键路径长度 30 * 7 将近一分钟
-    # G.gen("mine")
-    G.user_defined_dag()  # 自定义DAG
+    G.gen("mine")
+    # G.user_defined_dag()  # 自定义DAG
     G.WCET_random_config()  # WCET 配置
     G.priority_random_config()  # 优先级配置
     G.critical_path_config()  # 关键路径分析
@@ -474,24 +457,26 @@ if __name__ == "__main__":
     # G.dag_param_critical_update()       # 关键数据分析
 
     x = G.response_time_analysis(3)
-    # for y in x:
-        # print(y)
-    # plt.title('DAG generator' +
-    #           '\n Is a DAG:{0}'.format(nx.is_directed_acyclic_graph(G.get_graph())) +  # 检测是否是有向无环图
-    #           '\n number of nodes for DAG:{0}'.format(G.G.number_of_nodes()) +  # 返回G的节点数量
-    #           '\n number of edges for DAG:{0}'.format(G.G.number_of_edges()) +  # 返回G的边数量
-    #           '',
-    #           fontsize=10, color="black", weight="light", ha='left', x=0)  # style="italic",
 
-    plt.xlabel('crirical={}'.format(G.Critical_path))
-    plt.ylabel('param={}'.format(G.parallelism))
-    plt.show()
-    # G.save(basefolder="data/")
+if __name__ == "__main__":
+    #print('Number of arguments:', len(sys.argv), 'arguments.')
+    #print('Argument List:', str(sys.argv))
 
-    # 传递闭包***
-    # 有向图的 transitive closure；
-    # nx.transitive_closure(G, reflexive=False)
-    # 如果有向无环形图的transitive closure；
-    # nx.transitive_closure_dag(G.get_graph(), topo_order=None)
-    # print('1', np.array(nx.adjacency_matrix(G.get_graph()).todense()))
-    # print('2', np.array(nx.adjacency_matrix(G1).todense()))
+    # use the intrepreter to decode code (!the input strings have to be error-free!)
+    """
+    G = ast.literal_eval(sys.argv[1])
+    C = ast.literal_eval(sys.argv[2])
+    prio = ast.literal_eval(sys.argv[3])
+    n_cores = ast.literal_eval(sys.argv[4])
+    overide_prio = ast.literal_eval(sys.argv[5])
+    """
+    # test vector
+    # G = {1:[2,3,4,5,9],2:[9],3:[6,7,8],4:[7],5:[7,8],6:[9],7:[9],8:[9],9:[]}
+    # C = {1:4581,2:17559,3:9352,4:7826,5:8589,6:12215,7:9543,8:15078,9:11261}
+    # prio = {1:9,2:8,3:7,4:6,5:5,6:4,7:3,8:2,9:1}
+    # n_cores = 2
+    # overide_prio = 0
+
+    # R, alpha_arr, beta_arr = rta_alphabeta_new(G, C, prio, n_cores, overide_prio)
+    print(R)
+

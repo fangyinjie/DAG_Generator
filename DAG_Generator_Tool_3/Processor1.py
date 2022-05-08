@@ -56,7 +56,7 @@ def Client(env, name, cw):
 
 def setup(env,  Dag_Set, core_num):
     """创建一个工作站，几个初始客户，然后持续有客户到达. 每隔t_inter - 2, t_inter + 3分钟（可以自定义）."""
-    Dispatcher = Dispatcher_Workspace(env, Dag_Set, core_num)
+    Dispatcher = Dispatcher_Workspace(env, Dag_Set, core_num)   # 分配器建立资源，只要有资源就开始运行
     for i in range(Dag_Set.get_dag_num()):
         env.process(Client(env, 'Client_%d' % i, workstation))  # 创建clientNumber个初始客户
     while Dag_Set.get_node_num() > 0:

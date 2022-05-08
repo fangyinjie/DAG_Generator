@@ -1,0 +1,61 @@
+import random
+import simpy
+
+
+class WorkStation(object):
+    """ 一个处理器（Processor），拥有特定数量的资源（core，内存，缓存等）。
+    一个客户首先申请服务。在对应服务时间完成后结束并离开工作站"""
+    def __init__(self, env, num_machines, washtime):
+        self.env = env                                          # simpy实体
+        self.machine = simpy.Resource(env, num_machines)        # 类给env配资源
+        self.washtime = washtime                                # 浪费的时间
+        self.allClient = 0                                      #
+        self.accomplishClient = 0                               #
+
+    def wash(self, car):
+        """ 服务流程 """
+        yield self.env.timeout(random.randint(2, 10))  # 假设服务时间为随机数（2~10）
+        self.allClient += 1
+        per = random.randint(50, 99)
+        print("%s's 任务完成度：%d%%." % (car, per))
+        if per > 80:
+            self.accomplishClient += 1
+        print("工作站服务客户数：%d, 工作站服务达标率：%.2f。"
+              % (self.allClient, float(self.accomplishClient) / float(self.allClient)))
+
+
+class Dispatcher_Workspace(object):
+    """ 一个处理器（Processor），拥有特定数量的资源（core，内存，缓存等）。
+    一个客户首先申请服务。在对应服务时间完成后结束并离开工作站"""
+    def __init__(self, env, Dag_Set, core_num):
+        self.env = env                                          # simpy实体
+        self.DAG_Set = Dag_Set
+        self.core_Set = simpy.Resource(env, core_num)           # 类给env配资源
+
+
+# def setup(env,  Dag_Set, core_num):
+#     """创建一个工作站，几个初始客户，然后持续有客户到达. 每隔t_inter - 2, t_inter + 3分钟（可以自定义）."""
+#     Dispatcher = Dispatcher_Workspace(env, Dag_Set, core_num)   # 分配器建立资源，只要有资源就开始运行
+#     for i in range(Dag_Set.get_dag_num()):
+#         env.process(Client(env, 'Client_%d' % i, workstation))  # 创建clientNumber个初始客户
+#     while Dag_Set.get_node_num() > 0:
+#     while True:
+#         yield env.timeout(random.randint(t_inter - 2, t_inter + 3))  # 在仿真过程中持续创建客户 3-8分钟
+#         i += 1
+#         env.process(Client(env, 'Client_%d' % i, workstation))
+
+def setup(env,  Dag_Set, core_num):
+#     """创建一个工作站，几个初始客户，然后持续有客户到达. 每隔t_inter - 2, t_inter + 3分钟（可以自定义）."""
+#     Dispatcher = Dispatcher_Workspace(env, Dag_Set, core_num)   # 分配器建立资源，只要有资源就开始运行
+#     for i in range(Dag_Set.get_dag_num()):
+#         env.process(Client(env, 'Client_%d' % i, workstation))  # 创建clientNumber个初始客户
+#     while Dag_Set.get_node_num() > 0:
+#     while True:
+#         yield env.timeout(random.randint(t_inter - 2, t_inter + 3))  # 在仿真过程中持续创建客户 3-8分钟
+#         i += 1
+#         env.process(Client(env, 'Client_%d' % i, workstation))
+
+if __name__ == "__main__":
+    env = simpy.Environment()       # 创建一个环境并开始仿真
+    env.process(setup(env))         # 开始执行!
+    env.run(until=1000)

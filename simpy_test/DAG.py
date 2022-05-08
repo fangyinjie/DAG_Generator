@@ -13,6 +13,7 @@ import random as rand
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+import rta
 import tqdm
 # Class: DAG (Directed Acyclic Graph Task)
 
@@ -349,23 +350,6 @@ class DAG:
     #   自定义 DAG 算法#
     #####################################
     def user_defined_dag(self):
-        self.parallelism = 4
-        self.Critical_path = 4
-
-        # test vector
-        G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
-        C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
-        # prio = {1:9,2:8,3:7,4:6,5:5,6:4,7:3,8:2,9:1}
-        prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
-        for node_x in HE_2019_nodes:
-            self.G.add_node(node_x[0], Node_ID=node_x[1], rank=0, critic=False, WCET=node_x[2], priority=node_x[3])
-        edges = [(1, 2), (1, 3), (1, 4), (1, 5), (1, 6),
-                 (5, 7), (6, 7),
-                 (2, 8), (3, 8), (4, 8), (7, 8) ]
-        for edge in edges:
-            self.G.add_edge(edge[0], edge[1], weight=1)
-
-    def user_defined_dag2(self):
         # 节点号； 节点名； 节点优权重； 节点优先级
         self.parallelism = 4
         self.Critical_path = 4
@@ -387,34 +371,12 @@ class DAG:
         for edge in edges:
             self.G.add_edge(edge[0], edge[1], weight=1)
 
-    def user_defined_dag1(self):
-        # 节点号； 节点名； 节点优权重； 节点优先级
-        self.parallelism = 4
-        self.Critical_path = 4
-        HE_2019_nodes = [[0, 'V0', 1, 1],
-                         [1, 'V1', 7, 5],
-                         [2, 'V2', 3, 6],
-                         [3, 'V3', 3, 7],
-                         [4, 'V4', 6, 2],
-                         [5, 'V5', 9, 3],
-                         [6, 'V6', 2, 4],
-                         [7, 'V7', 1, 8]]
-        # for x in self_list:
-        # self.G.add_node(0, Node_ID='souce_node', rank=0, critic=False, WCET=1)  # 起始节点（1）；rank=0
-        for node_x in HE_2019_nodes:
-            self.G.add_node(node_x[0], Node_ID=node_x[1], rank=0, critic=False, WCET=node_x[2], priority=node_x[3])
-        edges = [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5),
-                 (4, 6), (5, 6),
-                 (1, 7), (2, 7), (3, 7), (6, 7)]
-        for edge in edges:
-            self.G.add_edge(edge[0], edge[1], weight=1)
-
     def response_time_analysis(self, core_num):
         node_list = list(self.G.nodes())
         paths = list(nx.all_simple_paths(self.G, node_list[0], node_list[-1]))
 
         interference_node_list = []
-        ret_path_and_rta = []
+        ret_path_and_rta = [0, 0, 0, [], []]
         for x in paths:
             # print(x)
             temp_interference_node_list = []
@@ -438,7 +400,14 @@ class DAG:
             interference_node_list.append(temp_interference_node_list)
             temp_rta = temp_path_weight + temp_inter_weight/core_num
             # 计算此路径的RTA
-            ret_path_and_rta.append((temp_rta, temp_path_weight, temp_inter_weight, x, temp_interference_node_list))
+            if temp_rta > ret_path_and_rta[0]:
+                ret_path_and_rta[0] = temp_rta
+                ret_path_and_rta[1] = temp_path_weight
+                ret_path_and_rta[2] = temp_inter_weight
+                ret_path_and_rta[3] = x
+                ret_path_and_rta[4] = temp_interference_node_list
+            print((temp_rta, temp_path_weight, temp_inter_weight, x, temp_interference_node_list))
+            # ret_path_and_rta.append((temp_rta, temp_path_weight, temp_inter_weight, x, temp_interference_node_list))
         return ret_path_and_rta
 
     def WCET_random_config(self):
@@ -452,41 +421,74 @@ class DAG:
         for x in self.G.nodes(data=True):
             x[1]['priority'] = priority_random_list.pop()
 
+    def DAG_config(self, input_G, input_C, input_prio):  # 关键路径分析
+        self.parallelism = 4
+        self.Critical_path = 4
+        for key, value in input_C.items():
+            self.G.add_node(key, Node_ID=key, rank=0, critic=False, WCET=value, priority=input_prio[key])
+        for key, value in input_G.items():
+            for x in value:
+                self.G.add_edge(key, x, weight=1)
 
 if __name__ == "__main__":
-    # Parallelism = input("请输入DAG的并行度：")
-    # print("你输入的内容是: ", Parallelism)
-    # Critical_path = input("请输入DAG的关键路径长度：")
-    # print("你输入的内容是: ", Critical_path)
-    plt.figure()            # (figsize=(100.0, 100.0))
-    # plt.subplot(211)
+    plt.figure()
     G = DAG()               # 初始化DAG
-    G.parallelism   = 30     # int(Parallelism)      # 输入并行度
-    G.Critical_path = 8     # int(Critical_path)    # 输入关键路径长度 30 * 7 将近一分钟
-    # G.gen("mine")
-    G.user_defined_dag()  # 自定义DAG
-    G.WCET_random_config()  # WCET 配置
-    G.priority_random_config()  # 优先级配置
-    G.critical_path_config()  # 关键路径分析
+    G.user_defined_dag()    # 自定义DAG
+    # G.WCET_random_config()  # WCET 配置//
+    # G.priority_random_config()  # 优先级配置
+    input_G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
+    input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
+    # input_prio = {1: 9, 2: 8, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3, 8: 2, 9: 1}
+    input_prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
 
-    G.graph_node_position_determine()   # DAG节点位置确定
-
-    # G.dag_param_critical_update()       # 关键数据分析
-
-    x = G.response_time_analysis(3)
-    # for y in x:
-        # print(y)
+    input_n_cores = 2
+    input_overide_prio = 0
+    G.DAG_config(input_G, input_C, input_prio)
+    G.critical_path_config()                # 关键路径分析
+    G.graph_node_position_determine()       # DAG节点位置确定
+    # G.dag_param_critical_update()         # DAG数据分析
+    #################
+    # 响应时间分析
+    #################
+    print('\n')
+    # 1.zhao 2020 方法
+    print('zhao 2020 方法')
+    R, alpha_arr, beta_arr = rta.rta_alphabeta_new(input_G, input_C, input_prio, input_n_cores, input_overide_prio)
+    print(R)
+    print(alpha_arr)
+    print(beta_arr)
+    print('\n')
+    # 2.he 2019 方法
+    print('he 2019 方法')
+    he_r = rta.TPDS_rta_new(input_G, input_C, input_prio, input_n_cores)    # 自备优先级算法
+    # he_r = rta.TPDS_rta_new_pro(input_G, input_C, input_n_cores)            # 使用其他的优先级
+    print(he_r)
+    print('\n')
+    # 3.基础方法
+    print('基础方法')
+    x = G.response_time_analysis(input_n_cores)
+    print(x)
     # plt.title('DAG generator' +
     #           '\n Is a DAG:{0}'.format(nx.is_directed_acyclic_graph(G.get_graph())) +  # 检测是否是有向无环图
     #           '\n number of nodes for DAG:{0}'.format(G.G.number_of_nodes()) +  # 返回G的节点数量
     #           '\n number of edges for DAG:{0}'.format(G.G.number_of_edges()) +  # 返回G的边数量
     #           '',
     #           fontsize=10, color="black", weight="light", ha='left', x=0)  # style="italic",
-
-    plt.xlabel('crirical={}'.format(G.Critical_path))
-    plt.ylabel('param={}'.format(G.parallelism))
+    # plt.xlabel('crirical={}'.format(G.Critical_path))
+    # plt.ylabel('param={}'.format(G.parallelism))
     plt.show()
-    # G.save(basefolder="data/")
+
+
+
+
+
+
+
+
+
+
+
+
 
     # 传递闭包***
     # 有向图的 transitive closure；
