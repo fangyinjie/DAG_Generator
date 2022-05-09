@@ -14,6 +14,8 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import rta
+import sys
+import ast
 # Class: DAG (Directed Acyclic Graph Task)
 
 
@@ -429,62 +431,30 @@ class DAG:
             for x in value:
                 self.G.add_edge(key, x, weight=1)
 
-    def rev_DAG_config(self):  # 关键路径分析
-        self.parallelism = 4
-        self.Critical_path = 4
-        input_G = {}
-        input_C = {}
-        input_prio = {}
-        for x in self.G.nodes(data=True):
-            # input_G[x[0]] = list(nx.bfs_successors(self.G, x[0]))
-            input_G[x[0]] = list(nx.neighbors(self.G, x[0]))
-            input_C[x[0]] = x[1]['WCET']
-            input_prio[x[0]] = x[1]['priority']
-        return input_G, input_C, input_prio
-
-    def rev_DAG_config2(self):  # 关键路径分析
-        self.parallelism = 4
-        self.Critical_path = 4
-        input_G = {}
-        input_C = {}
-        input_prio = {}
-        for x in self.G.nodes(data=True):
-            # input_G[x[0]] = list(nx.bfs_successors(self.G, x[0]))
-            input_G[x[0]] = list(nx.neighbors(self.G, x[0]))
-            input_C[x[0]] = x[1]['WCET']
-        return input_G, input_C
-
-
 if __name__ == "__main__":
     plt.figure()
     G = DAG()               # 初始化DAG
-    G.parallelism = 7  # int(Parallelism)      # 输入并行度
-    G.Critical_path = 8  # int(Critical_path)    # 输入关键路径长度 30 * 7 将近一分钟
-    G.gen("mine")
     # G.user_defined_dag()    # 自定义DAG
-    G.WCET_random_config()  # WCET 配置//
-
-    input_G, input_C = G.rev_DAG_config2()
-
-    Prio = rta.TPDS_Ordering_PA(input_G, input_C)
-
+    # G.WCET_random_config()  # WCET 配置//
     # G.priority_random_config()  # 优先级配置
-    for x in G.G.nodes(data=True):
-        x[1]['priority'] = Prio[x[0]]
-
-    input_G, input_C, input_prio = G.rev_DAG_config()
     """
     input_G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
     input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
     # input_prio = {1: 9, 2: 8, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3, 8: 2, 9: 1}
     input_prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
-    G.DAG_config(input_G, input_C, input_prio)
-    """
     input_n_cores = 2
     input_overide_prio = 0
+    """
+    G = ast.literal_eval(sys.argv[1])
+    C = ast.literal_eval(sys.argv[2])
+    prio = ast.literal_eval(sys.argv[3])
+    n_cores = ast.literal_eval(sys.argv[4])
+    overide_prio = ast.literal_eval(sys.argv[5])
+
+    G.DAG_config(input_G, input_C, input_prio)
     # G.critical_path_config()                # 关键路径分析
     # G.graph_node_position_determine()       # DAG节点位置确定
-    # G.dag_param_critical_update()           # DAG数据分析
+    # G.dag_param_critical_update()         # DAG数据分析
     #################
     # 响应时间分析
     #################
