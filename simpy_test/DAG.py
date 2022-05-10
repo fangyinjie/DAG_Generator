@@ -380,18 +380,21 @@ class DAG:
             # print(x)
             temp_interference_node_list = []
             temp_path_weight = 0
+            temp_WCET = []
             for y in x:
                 temp_all_node = self.G.nodes(data=True)
                 temp_ance = list(nx.ancestors(self.G, y))
                 temp_desc = list(nx.descendants(self.G, y))
                 temp_self = x
                 sub_node = self.G.nodes[y]
+                temp_path_weight += sub_node.get('WCET')
+                temp_WCET.append(sub_node.get('WCET'))
                 for z in temp_all_node:
                     if (z[0] not in temp_ance) and (z[0] not in temp_desc) and (z[0] not in temp_self):  # 判断z是否是干扰节点
-                        if z[1]['priority'] < sub_node.get('priority'):             # 判断此z的优先级是否大于y
-                            if z not in temp_interference_node_list:            # 判断此z是否已经加入
-                                temp_interference_node_list.append(z)
-                temp_path_weight += sub_node.get('WCET')
+                        # if z[1]['priority'] < sub_node.get('priority'):             # 判断此z的优先级是否大于y
+                        if z not in temp_interference_node_list:            # 判断此z是否已经加入
+                            temp_interference_node_list.append(z)
+
                 # 每个节点的非前驱和非后继节点
             temp_inter_weight = 0
             for y in temp_interference_node_list:
@@ -399,19 +402,21 @@ class DAG:
             interference_node_list.append(temp_interference_node_list)
             temp_rta = temp_path_weight + temp_inter_weight/core_num
             # 计算此路径的RTA
+
             if temp_rta > ret_path_and_rta[0]:
                 ret_path_and_rta[0] = temp_rta
                 ret_path_and_rta[1] = temp_path_weight
                 ret_path_and_rta[2] = temp_inter_weight
                 ret_path_and_rta[3] = x
                 ret_path_and_rta[4] = temp_interference_node_list
-            # print((temp_rta, temp_path_weight, temp_inter_weight, x, temp_interference_node_list))
+            print((temp_rta, temp_path_weight, temp_inter_weight, x, temp_interference_node_list))
+            print(temp_WCET)
             # ret_path_and_rta.append((temp_rta, temp_path_weight, temp_inter_weight, x, temp_interference_node_list))
         return ret_path_and_rta
 
     def WCET_random_config(self):
         for x in self.G.nodes(data=True):
-            x[1]['WCET'] = rand.randint(100, 1000)
+            x[1]['WCET'] = rand.randint(1, 10)
             # [x for x in self.G.nodes(data=True) if (x[1].get('state') == 'ready')]
 
     def priority_random_config(self):
@@ -447,7 +452,7 @@ class DAG:
         self.Critical_path = 4
         input_G = {}
         input_C = {}
-        input_prio = {}
+        # input_prio = {}
         for x in self.G.nodes(data=True):
             # input_G[x[0]] = list(nx.bfs_successors(self.G, x[0]))
             input_G[x[0]] = list(nx.neighbors(self.G, x[0]))
@@ -457,41 +462,52 @@ class DAG:
 
 if __name__ == "__main__":
     plt.figure()
-    G = DAG()               # 初始化DAG
-    G.parallelism = 7  # int(Parallelism)      # 输入并行度
-    G.Critical_path = 8  # int(Critical_path)    # 输入关键路径长度 30 * 7 将近一分钟
+    G = DAG()           # 初始化DAG
+
+    """     """
+    G.parallelism = 4  # int(Parallelism)      # 输入并行度
+    G.Critical_path = 4  # int(Critical_path)    # 输入关键路径长度 30 * 7 将近一分钟
     G.gen("mine")
     # G.user_defined_dag()    # 自定义DAG
     G.WCET_random_config()  # WCET 配置//
 
     input_G, input_C = G.rev_DAG_config2()
 
-    Prio = rta.TPDS_Ordering_PA(input_G, input_C)
-
+    input_prio = rta.TPDS_Ordering_PA(input_G, input_C)
     # G.priority_random_config()  # 优先级配置
-    for x in G.G.nodes(data=True):
-        x[1]['priority'] = Prio[x[0]]
+    print(input_G)
+    print(input_C)
+    print(input_prio)
 
-    input_G, input_C, input_prio = G.rev_DAG_config()
-    """
-    input_G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
-    input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
-    # input_prio = {1: 9, 2: 8, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3, 8: 2, 9: 1}
-    input_prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
-    G.DAG_config(input_G, input_C, input_prio)
-    """
+    for x in G.G.nodes(data=True):
+        x[1]['priority'] = input_prio[x[0]]
+
+    # input_G, input_C, input_prio = G.rev_DAG_config()
+    """     """
+
+    """ """
+    # input_G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
+    # input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
+    # # input_prio = {1: 9, 2: 8, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3, 8: 2, 9: 1}
+    # input_prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
+    # G.DAG_config(input_G, input_C, input_prio)
+    """ """
+
     input_n_cores = 2
     input_overide_prio = 0
-    # G.critical_path_config()                # 关键路径分析
-    # G.graph_node_position_determine()       # DAG节点位置确定
+    G.critical_path_config()                  # 关键路径分析
+    G.graph_node_position_determine()         # DAG节点位置确定
     # G.dag_param_critical_update()           # DAG数据分析
     #################
     # 响应时间分析
     #################
     print('\n')
+    print(G.G.nodes(data=True))
+
     # 1.zhao 2020 方法
     print('zhao 2020 方法')
     R, alpha_arr, beta_arr = rta.rta_alphabeta_new(input_G, input_C, input_prio, input_n_cores, input_overide_prio)
+
     print(R)
     print(alpha_arr)
     print(beta_arr)
@@ -499,13 +515,16 @@ if __name__ == "__main__":
     # 2.he 2019 方法
     print('he 2019 方法')
     he_r = rta.TPDS_rta_new(input_G, input_C, input_prio, input_n_cores)    # 自备优先级算法
-    # he_r = rta.TPDS_rta_new_pro(input_G, input_C, input_n_cores)          # 使用其他的优先级
     print(he_r)
+    # he_r = rta.TPDS_rta_new_pro(input_G, input_C, input_n_cores)          # 使用其他的优先级
+    # print(he_r)
     print('\n')
     # 3.基础方法
     print('基础方法')
     x = G.response_time_analysis(input_n_cores)
     print(x)
+
+
     # plt.title('DAG generator' +
     #           '\n Is a DAG:{0}'.format(nx.is_directed_acyclic_graph(G.get_graph())) +  # 检测是否是有向无环图
     #           '\n number of nodes for DAG:{0}'.format(G.G.number_of_nodes()) +  # 返回G的节点数量
@@ -514,7 +533,7 @@ if __name__ == "__main__":
     #           fontsize=10, color="black", weight="light", ha='left', x=0)  # style="italic",
     # plt.xlabel('crirical={}'.format(G.Critical_path))
     # plt.ylabel('param={}'.format(G.parallelism))
-    # plt.show()
+    plt.show()
 
 
 
@@ -526,3 +545,4 @@ if __name__ == "__main__":
     # nx.transitive_closure_dag(G.get_graph(), topo_order=None)
     # print('1', np.array(nx.adjacency_matrix(G.get_graph()).todense()))
     # print('2', np.array(nx.adjacency_matrix(G1).todense()))
+
