@@ -12,11 +12,9 @@ from random import randint, random, uniform
 import random as rand
 import numpy as np
 import networkx as nx
-import math
+import matplotlib.pyplot as plt
 import rta
-import sys
-import ast
-
+import math
 # Class: DAG (Directed Acyclic Graph Task)
 
 
@@ -50,14 +48,14 @@ class DAG:
     #####################################
 
     def __init__(self):
-        self.name = 'Tau_{null}'  # DAG save的名称
-        self.DAG_ID = '0'  # DAG的名称
-        self.G = nx.DiGraph()  # DAG:-networkX结构
-        self.task_num = 0  # DAG中节点（job）的数量
-        self.Priority = 1  # 越小等级越高
+        self.name           = 'Tau_{null}'  # DAG save的名称
+        self.DAG_ID         = '0'           # DAG的名称
+        self.G              = nx.DiGraph()  # DAG:-networkX结构
+        self.task_num       = 0             # DAG中节点（job）的数量
+        self.Priority       = 1             # 越小等级越高
         # generator mine
-        self.parallelism = 0  # 并行度
-        self.Critical_path = 0  # 关键路径长度
+        self.parallelism    = 0             # 并行度
+        self.Critical_path  = 0             # 关键路径长度
 
     # def __init__(self, Dag, Dag_ID, Priority):
     #     self.name           = 'Tau_{null}'  # DAG的名称
@@ -138,60 +136,60 @@ class DAG:
             app.append(len(rank_x))
         self.parallelism = max(app)
         # # # # # （4）antichains # # # # #
-        print("antichains", list(nx.antichains(self.G, topo_order=None)))  # 从DAG中生成antichains；
+        print("antichains", list(nx.antichains(self.G, topo_order=None)))    # 从DAG中生成antichains；
         """Find the k-cores of a graph."""
-        print("每个vertex的core数:", nx.core_number(self.G))  # Returns the core number for each vertex.
+        print("每个vertex的core数:", nx.core_number(self.G))                   # Returns the core number for each vertex.
         # k-core是包含k度(degree k)或k度(degree k)以上节点的最大子图。
-        print("图G的k-core:", nx.k_core(self.G).edges(data=True))  # Returns the k-core of G.
+        print("图G的k-core:", nx.k_core(self.G).edges(data=True))             # Returns the k-core of G.
         # k-shell是由core数为k的节点生成的子图，即，节点在nodes in the k-core中且不在(k+1)-core中.
-        print("图G的k_shell:", nx.k_shell(self.G).edges(data=True))  # Returns the k-shell of G.
+        print("图G的k_shell:", nx.k_shell(self.G).edges(data=True))           # Returns the k-shell of G.
         # k-crust是带有k-core删除的边的图G(去掉边后的孤立节点也一并去掉)。
-        print("图G的k_crust:", nx.k_crust(self.G).edges(data=True))  # Returns the k-crust of G.
+        print("图G的k_crust:", nx.k_crust(self.G).edges(data=True))           # Returns the k-crust of G.
         # k-corona是k-core中节点的子图，这些节点在k核中正好有k个邻居。
-        print("图G的k_corona:", nx.k_corona(self.G, None).edges(data=True))  # Returns the k-corona of G.
+        print("图G的k_corona:", nx.k_corona(self.G, None).edges(data=True))   # Returns the k-corona of G.
         """Routines to find the boundary of a set of nodes."""
         print("edge_boundary:", list(nx.edge_boundary(self.G, [1])))
         print("node_boundary:", list(nx.node_boundary(self.G, [1])))
         """Dominance algorithms."""
-        print("直接支配节点:", nx.immediate_dominators(self.G, 0))  # 返回有向图中所有节点的直接支配节点。
-        print("直接支配边界:", nx.dominance_frontiers(self.G, 0))  # 返回有向图中所有节点的支配边界。
-        """Flow Hierarchy."""  # 返回有向网络的流层次结构(恒为1.0不知道为什么？)。
+        print("直接支配节点:", nx.immediate_dominators(self.G, 0))     # 返回有向图中所有节点的直接支配节点。
+        print("直接支配边界:", nx.dominance_frontiers(self.G, 0))      # 返回有向图中所有节点的支配边界。
+        """Flow Hierarchy."""   # 返回有向网络的流层次结构(恒为1.0不知道为什么？)。
         # print("flow_hierarchy:", nx.flow_hierarchy(self.G, weight='weight'))
         """搜索最低共同祖先（DAGs）的算法."""
         # lcas: 元组((u, v), lca)的生成器，其中'u'和'v'是对儿中节点，lca是他们的最低共同祖先，但要求必须需是树！！！
         print("all_pairs_lowest_common_ancestor:", list(nx.all_pairs_lowest_common_ancestor(self.G)))
         """用于计算和验证规则图(regular graphs)的功能 """
         # 定义（regular graph）：图中每个节点都有相同的度。regular有向图是指每个顶点的入度和出度相等的图。
-        print("图是否是规则图:", nx.is_regular(self.G))  # 判断图G是否是规则图.
+        print("图是否是规则图:", nx.is_regular(self.G))   # 判断图G是否是规则图.
         # 定义（k-regular graph）：每个节点都具有k度，a graph where each vertex has degree k.不支持有向图；is_k_regular # 检测是否图G是一个k-regular图
         """图结构的Hubs（中心）以及authorities（权限）分析."""
         print("节点的HITS hubs和authorities值:\n", nx.hits(self.G))  # h,a=hits(G)返回节点的HITS hubs和authorities值.
-        print("authority矩阵:\n", nx.authority_matrix(self.G))  # 返回HITS authority矩阵.
-        print("hub矩阵:\n", nx.hub_matrix(self.G))  # 返回HITS hub矩阵.
+        print("authority矩阵:\n", nx.authority_matrix(self.G))      # 返回HITS authority矩阵.
+        print("hub矩阵:\n", nx.hub_matrix(self.G))                  # 返回HITS hub矩阵.
         """图结构的PageRank分析."""
         # print("pagerank:\n", nx.pagerank(self.G))                  # 返回图中节点的PageRank.
         # print("google矩阵:\n", nx.google_matrix(self.G))            # 返回图的google矩阵
         #  # print("pagerank_numpy:\n", nx.pagerank_numpy(self.G))      # 返回图中节点的PageRank。
         # print("pagerank_scipy:\n", nx.pagerank_scipy(self.G))      # 返回图中节点的PageRank。
         """宽度优先搜索(BFS)图节点的基本算法"""
-        print("BFS_edges:\n", list(nx.bfs_edges(self.G, 0)))  # 从source开始的宽度优先搜索中对边进行迭代。
+        print("BFS_edges:\n", list(nx.bfs_edges(self.G, 0)))       # 从source开始的宽度优先搜索中对边进行迭代。
         print("edge_bfs:\n", list(nx.edge_bfs(self.G, source=0)))  # 一种直接的在图G中边的宽度优先搜索, 起始于`source`.
-        print("BFS_tree:\n", list(nx.bfs_tree(self.G, 0)))  # 返回一个从source开始的宽度优先搜索构造的面向方向的树。
+        print("BFS_tree:\n", list(nx.bfs_tree(self.G, 0)))         # 返回一个从source开始的宽度优先搜索构造的面向方向的树。
         print("BFS_predecessors:\n", list(nx.bfs_predecessors(self.G, 0)))  # 从source中返回宽度优先搜索(BFS)的前驱的迭代器。
-        print("BFS_successors:\n", list(nx.bfs_successors(self.G, 0)))  # 从source中返回宽度优先搜索(BFS)的后继的迭代器。
+        print("BFS_successors:\n", list(nx.bfs_successors(self.G, 0)))      # 从source中返回宽度优先搜索(BFS)的后继的迭代器。
         # 返回“G”中距“source”固定“distance”的所有节点。
         print("descendants_at_distance:\n", list(nx.descendants_at_distance(self.G, 0, self.Critical_path - 2)))
         """深度优先搜索(DFS)图节点的基本算法"""
-        print("Dfs_edges:\n", list(nx.dfs_edges(self.G, source=0)))  # 从source开始的深度优先搜索(DFS)中对边进行迭代。
-        print("edge_dfs:\n", list(nx.edge_dfs(self.G, source=0)))  # 一种直接的在图G中边的深度优先搜索, 起始于`source`.
-        print("dfs_tree:\n", list(nx.dfs_tree(self.G, source=0)))  # 返回基于深度优先搜索的树。
-        print("dfs_predecessors:\n", list(nx.dfs_predecessors(self.G, source=0)))  # 返回在source中深度优先搜索中的前驱的字典。
-        print("dfs_successors:\n", list(nx.dfs_successors(self.G, source=0)))  # 返回在source中深度优先搜索中的后继的字典。
+        print("Dfs_edges:\n", list(nx.dfs_edges(self.G, source=0)))    # 从source开始的深度优先搜索(DFS)中对边进行迭代。
+        print("edge_dfs:\n", list(nx.edge_dfs(self.G, source=0)))      # 一种直接的在图G中边的深度优先搜索, 起始于`source`.
+        print("dfs_tree:\n", list(nx.dfs_tree(self.G, source=0)))      # 返回基于深度优先搜索的树。
+        print("dfs_predecessors:\n", list(nx.dfs_predecessors(self.G, source=0)))        # 返回在source中深度优先搜索中的前驱的字典。
+        print("dfs_successors:\n", list(nx.dfs_successors(self.G, source=0)))            # 返回在source中深度优先搜索中的后继的字典。
         print("dfs_postorder_nodes:\n", list(nx.dfs_postorder_nodes(self.G, source=0)))  # 从source开始，以深度优先搜索后排序的方式生成节点。
-        print("dfs_labeled_edges:\n", list(nx.dfs_labeled_edges(self.G, source=0)))  # 在按类型标记的深度优先搜索(DFS)中迭代边。
+        print("dfs_labeled_edges:\n", list(nx.dfs_labeled_edges(self.G, source=0)))      # 在按类型标记的深度优先搜索(DFS)中迭代边。
         """用于识别孤立(零度)节点的函数"""
-        print("isolates:\n", list(nx.isolates(self.G)))  # 判断是否有孤立节点，图中孤立节点的迭代器
-        print("number_of_isolates:\n", nx.number_of_isolates(self.G))  # 返回图中鼓励节点的数量
+        print("isolates:\n", list(nx.isolates(self.G)))                    # 判断是否有孤立节点，图中孤立节点的迭代器
+        print("number_of_isolates:\n", nx.number_of_isolates(self.G))      # 返回图中鼓励节点的数量
         # 3.node_num节点的前驱、后继、祖先、后代
         for self_node in self.G.nodes(data=True):
             print('node_num=:{0}'.format(self_node))
@@ -278,10 +276,10 @@ class DAG:
     #       pos = nx.spectral_layout(G.get_graph(), scale=15)   #- spectral_layout：  根据图的拉普拉斯特征向量排列节
     #########################################
     def graph_node_position_determine(self):
-        color_map = []
-        n_pos = {}
-        n_map = {}
-        c_dicy = {}
+        color_map       = []
+        n_pos           = {}
+        n_map           = {}
+        c_dicy          = {}
         rank_list = [sorted(generation) for generation in nx.topological_generations(self.G)]
         # print('拓扑分层：{0}'.format(rank_list))
         for z1 in range(0, len(rank_list)):
@@ -289,8 +287,7 @@ class DAG:
                 node_ID = rank_list[z1][z2]
                 sub_node = self.G.nodes[node_ID]
                 n_pos[node_ID] = [(z1 + 0.5) * 120 / len(rank_list), (z2 + 0.5) * 120 / len(rank_list[z1])]
-                n_map[node_ID] = 'ID:{0} \n WCET:{1}\n prio:{2}'.format(sub_node.get('Node_ID'), sub_node.get('WCET'),
-                                                                        sub_node.get('priority'))
+                n_map[node_ID] = 'ID:{0} \n WCET:{1}\n prio:{2}'.format(sub_node.get('Node_ID'), sub_node.get('WCET'), sub_node.get('priority'))
                 if sub_node['critic']:
                     color = 'green'
                 else:
@@ -301,9 +298,9 @@ class DAG:
         # n_map = dict(sorted(n_map.items(), key=lambda x: x[0]))
         c_dicy = dict(sorted(c_dicy.items(), key=lambda x: x[0]))
         color_map = [x for x in c_dicy.values()]
-        nx.draw_networkx_nodes(self.G, n_pos, node_color=color_map, node_size=800, node_shape='o')  # 绘制节点
-        nx.draw_networkx_edges(self.G, n_pos, arrows=True, arrowstyle='-|>', arrowsize=20)  # 绘制边
-        nx.draw_networkx_labels(self.G, n_pos, labels=n_map, font_size=5, font_color='k')  # 标签
+        nx.draw_networkx_nodes(self.G, n_pos, node_color=color_map, node_size=800, node_shape='o')    # 绘制节点
+        nx.draw_networkx_edges(self.G, n_pos, arrows=True,arrowstyle='-|>',  arrowsize=20)                                     # 绘制边
+        nx.draw_networkx_labels(self.G, n_pos, labels=n_map, font_size=5, font_color='k')             # 标签
 
     #####################################
     #   DAG generator 算法3#
@@ -313,29 +310,27 @@ class DAG:
         assert (self.Critical_path >= 3)
         # 步骤一：initial a new graph G               # e.g. G = nx.DiGraph(Index=self.task_num)
         #   添加节点；确定rank的节点
-        self_critical_path = self.Critical_path  # 关键路径长度
-        self_parallelism = self.parallelism  # 图的并行度
-        self_Node_num = 0  # DAG的节点数量
+        self_critical_path  = self.Critical_path    # 关键路径长度
+        self_parallelism    = self.parallelism      # 图的并行度
+        self_Node_num       = 0                     # DAG的节点数量
         self.G.add_node(0, Node_ID='souce', rank=0, critic=False, WCET=1, priority=0)  # 起始节点（1）；rank=0
         for x in range(1, self_critical_path - 1):
-            m = randint(1, self_parallelism)  # 随机每层的节点数量（不能大于并行度）
+            m = randint(1, self_parallelism)        # 随机每层的节点数量（不能大于并行度）
             for y in range(1, m + 1):
                 self_Node_num += 1
-                self.G.add_node(self_Node_num, Node_ID='job{}'.format(self_Node_num), rank=x, critic=False, WCET=1,
-                                priority=0)
-        self.G.add_node(self_Node_num + 1, Node_ID='sink', rank=self_critical_path - 1, critic=False, WCET=1,
-                        priority=0)
+                self.G.add_node(self_Node_num, Node_ID='job{}'.format(self_Node_num), rank=x, critic=False, WCET=1, priority=0)
+        self.G.add_node(self_Node_num + 1, Node_ID='sink', rank=self_critical_path - 1, critic=False, WCET=1, priority=0)
         self.task_num = self_Node_num + 2  # +2算上source和sink
         self.G.add_edge(0, 1)
         for x in range(1, self_critical_path - 1):  # 从第2层开始到倒数第二层
-            ancestors_list = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') < x)]
+            ancestors_list   = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') < x)]
             descendants_list = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') > x)]
-            self_list = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') == x)]
-            successors_list = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') == (x + 1))]
+            self_list        = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') == x)]
+            successors_list  = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') == (x + 1))]
             for y in self_list:
-                k1 = randint(1, len(ancestors_list))  # 在祖先节点中随机几个节点作为前驱
+                k1 = randint(1, len(ancestors_list))                    # 在祖先节点中随机几个节点作为前驱
                 ancestors_group = rand.sample(ancestors_list, k1)
-                k2 = randint(1, len(descendants_list))  # 在后代节点中随机几个节点作为后继
+                k2 = randint(1, len(descendants_list))                  # 在后代节点中随机几个节点作为后继
                 descendants_group = rand.sample(descendants_list, k2)
                 for z in ancestors_group:
                     self.G.add_edge(z[0], y[0])
@@ -346,7 +341,7 @@ class DAG:
         # self.G = nx.DiGraph(self.Matrix)                  # 邻接矩阵生成一个有向图netWorkX；属性全无；
         # ## transitive reduction 传递约简； ## #
         # lp = list(nx.DiGraph(self.transitive_reduction_matrix()).edges())     # 1.networkx包
-        lp = list(nx.transitive_reduction(self.G).edges())  # 2.networkx包
+        lp = list(nx.transitive_reduction(self.G).edges())                  # 2.networkx包
         self.G.clear_edges()
         self.G.add_edges_from(lp)
         # print(np.array(nx.adjacency_matrix(self.G).todense()))
@@ -372,7 +367,7 @@ class DAG:
             self.G.add_node(node_x[0], Node_ID=node_x[1], rank=0, critic=False, WCET=node_x[2], priority=node_x[3])
         edges = [(1, 2), (1, 3), (1, 4), (1, 5), (1, 6),
                  (5, 7), (6, 7),
-                 (2, 8), (3, 8), (4, 8), (7, 8)]
+                 (2, 8), (3, 8), (4, 8), (7, 8) ]
         for edge in edges:
             self.G.add_edge(edge[0], edge[1], weight=1)
 
@@ -385,6 +380,7 @@ class DAG:
         for x in paths:
             # print(x)
             temp_interference_node_list = []
+            reserve_node_list = {}
             temp_path_weight = 0
             temp_WCET = []
             for y in x:
@@ -397,16 +393,21 @@ class DAG:
                 temp_WCET.append(sub_node.get('WCET'))
                 for z in temp_all_node:
                     if (z[0] not in temp_ance) and (z[0] not in temp_desc) and (z[0] not in temp_self):  # 判断z是否是干扰节点
-                        # if z[1]['priority'] < sub_node.get('priority'):             # 判断此z的优先级是否大于y
-                        if z not in temp_interference_node_list:  # 判断此z是否已经加入
-                            temp_interference_node_list.append(z)
-
+                        if z[1]['priority'] < sub_node.get('priority'):   # 判断此z的优先级是否大于y
+                            if z not in temp_interference_node_list:            # 判断此z是否已经加入
+                                temp_interference_node_list.append(z)
+                        else:
+                            reserve_node_list[z[0]] = z[1]['WCET']
                 # 每个节点的非前驱和非后继节点
+            t_reserve_list = sorted(reserve_node_list.items(), key=lambda x: x[1])
+            add_reserve = 0
+            for y in range(0, min(core_num, len(t_reserve_list))):
+                add_reserve += t_reserve_list[y][1]
             temp_inter_weight = 0
             for y in temp_interference_node_list:
                 temp_inter_weight += y[1]['WCET']
             interference_node_list.append(temp_interference_node_list)
-            temp_rta = temp_path_weight + temp_inter_weight / core_num
+            temp_rta = temp_path_weight + (temp_inter_weight+add_reserve)/core_num
             # 计算此路径的RTA
 
             if temp_rta > ret_path_and_rta[0]:
@@ -416,6 +417,7 @@ class DAG:
                 ret_path_and_rta[3] = x
                 ret_path_and_rta[4] = temp_interference_node_list
             # print((temp_rta, temp_path_weight, temp_inter_weight, x, temp_interference_node_list))
+            # print(t_reserve_list)
             # print(temp_WCET)
             # ret_path_and_rta.append((temp_rta, temp_path_weight, temp_inter_weight, x, temp_interference_node_list))
         return ret_path_and_rta
@@ -466,48 +468,89 @@ class DAG:
         return input_G, input_C
 
 
+
+
+
 if __name__ == "__main__":
-    # plt.figure()
-    G = DAG()  # 初始化DAG
+    plt.figure()
+    G = DAG()           # 初始化DAG
+
     """     """
-    G.parallelism = 4  # int(Parallelism)      # 输入并行度
-    G.Critical_path = 4  # int(Critical_path)    # 输入关键路径长度 30 * 7 将近一分钟
-    """ 
+    # G.parallelism = 4  # int(Parallelism)      # 输入并行度
+    # G.Critical_path = 4  # int(Critical_path)    # 输入关键路径长度 30 * 7 将近一分钟
+    # G.gen("mine")
+    # # G.user_defined_dag()    # 自定义DAG
+    # G.WCET_random_config()  # WCET 配置//
+    #
+    # input_G, input_C = G.rev_DAG_config2()
+    #
+    # input_prio = rta.TPDS_Ordering_PA(input_G, input_C)
+    # # G.priority_random_config()  # 优先级配置
+    # print(input_G)
+    # print(input_C)
+    # print(input_prio)
+    #
+    # for x in G.G.nodes(data=True):
+    #     x[1]['priority'] = input_prio[x[0]]
+
+    # input_G, input_C, input_prio = G.rev_DAG_config()
+    """     """
+
+    """ """
     input_G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
     input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
     # input_prio = {1: 9, 2: 8, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3, 8: 2, 9: 1}
     input_prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
-    """
-    """"""
-    input_G = ast.literal_eval(sys.argv[1])
-    input_C = ast.literal_eval(sys.argv[2])
-    input_prio = ast.literal_eval(sys.argv[3])
-    n_cores = ast.literal_eval(sys.argv[4])
-    overide_prio = ast.literal_eval(sys.argv[5])
-    """"""
-
     G.DAG_config(input_G, input_C, input_prio)
+    """ """
     input_n_cores = 2
+
     input_overide_prio = 0
-    # G.critical_path_config()  # 关键路径分析
-    G.graph_node_position_determine()  # DAG节点位置确定
+    G.critical_path_config()                  # 关键路径分析
+    G.graph_node_position_determine()         # DAG节点位置确定
+    # G.dag_param_critical_update()           # DAG数据分析
     #################
     # 响应时间分析
     #################
     # 1.zhao 2020 方法
     print('zhao 2020 方法')
     R, alpha_arr, beta_arr = rta.rta_alphabeta_new(input_G, input_C, input_prio, input_n_cores, input_overide_prio)
+
     print(R)
-
+    # print(alpha_arr)
+    # print(beta_arr)
+    print('\n')
     # 2.he 2019 方法
-    print('he 2019 方法')
-    he_r = G.response_time_analysis(input_n_cores)
-    print(math.ceil(he_r[0]))
-
+    # print('he 2019 方法')
+    # he_r = rta.TPDS_rta_new(input_G, input_C, input_prio, input_n_cores)    # 自备优先级算法
+    # print(he_r)
+    # he_r = rta.TPDS_rta_new_pro(input_G, input_C, input_n_cores)          # 使用其他的优先级
+    # print(he_r)
+    # print('\n')
     # 3.基础方法
     print('基础方法')
     x = G.response_time_analysis(input_n_cores)
     print(math.ceil(x[0]))
 
-    # plt.show()
+
+    # plt.title('DAG generator' +
+    #           '\n Is a DAG:{0}'.format(nx.is_directed_acyclic_graph(G.get_graph())) +  # 检测是否是有向无环图
+    #           '\n number of nodes for DAG:{0}'.format(G.G.number_of_nodes()) +  # 返回G的节点数量
+    #           '\n number of edges for DAG:{0}'.format(G.G.number_of_edges()) +  # 返回G的边数量
+    #           '',
+    #           fontsize=10, color="black", weight="light", ha='left', x=0)  # style="italic",
+    # plt.xlabel('crirical={}'.format(G.Critical_path))
+    # plt.ylabel('param={}'.format(G.parallelism))
+    plt.show()
+
+
+
+
+    # 传递闭包***
+    # 有向图的 transitive closure；
+    # nx.transitive_closure(G, reflexive=False)
+    # 如果有向无环形图的transitive closure；
+    # nx.transitive_closure_dag(G.get_graph(), topo_order=None)
+    # print('1', np.array(nx.adjacency_matrix(G.get_graph()).todense()))
+    # print('2', np.array(nx.adjacency_matrix(G1).todense()))
 

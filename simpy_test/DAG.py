@@ -416,9 +416,9 @@ class DAG:
                 ret_path_and_rta[2] = temp_inter_weight
                 ret_path_and_rta[3] = x
                 ret_path_and_rta[4] = temp_interference_node_list
-            print((temp_rta, temp_path_weight, temp_inter_weight, x, temp_interference_node_list))
-            print(t_reserve_list)
-            print(temp_WCET)
+            # print((temp_rta, temp_path_weight, temp_inter_weight, x, temp_interference_node_list))
+            # print(t_reserve_list)
+            # print(temp_WCET)
             # ret_path_and_rta.append((temp_rta, temp_path_weight, temp_inter_weight, x, temp_interference_node_list))
         return ret_path_and_rta
 
@@ -476,35 +476,35 @@ if __name__ == "__main__":
     G = DAG()           # 初始化DAG
 
     """     """
-    G.parallelism = 4  # int(Parallelism)      # 输入并行度
-    G.Critical_path = 4  # int(Critical_path)    # 输入关键路径长度 30 * 7 将近一分钟
-    G.gen("mine")
-    # G.user_defined_dag()    # 自定义DAG
-    G.WCET_random_config()  # WCET 配置//
-
-    input_G, input_C = G.rev_DAG_config2()
-
-    input_prio = rta.TPDS_Ordering_PA(input_G, input_C)
-    # G.priority_random_config()  # 优先级配置
-    print(input_G)
-    print(input_C)
-    print(input_prio)
-
-    for x in G.G.nodes(data=True):
-        x[1]['priority'] = input_prio[x[0]]
+    # G.parallelism = 4  # int(Parallelism)      # 输入并行度
+    # G.Critical_path = 4  # int(Critical_path)    # 输入关键路径长度 30 * 7 将近一分钟
+    # G.gen("mine")
+    # # G.user_defined_dag()    # 自定义DAG
+    # G.WCET_random_config()  # WCET 配置//
+    #
+    # input_G, input_C = G.rev_DAG_config2()
+    #
+    # input_prio = rta.TPDS_Ordering_PA(input_G, input_C)
+    # # G.priority_random_config()  # 优先级配置
+    # print(input_G)
+    # print(input_C)
+    # print(input_prio)
+    #
+    # for x in G.G.nodes(data=True):
+    #     x[1]['priority'] = input_prio[x[0]]
 
     # input_G, input_C, input_prio = G.rev_DAG_config()
     """     """
 
     """ """
-    # input_G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
-    # input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
-    # # input_prio = {1: 9, 2: 8, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3, 8: 2, 9: 1}
-    # input_prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
-    # G.DAG_config(input_G, input_C, input_prio)
+    input_G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
+    input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
+    # input_prio = {1: 9, 2: 8, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3, 8: 2, 9: 1}
+    input_prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
+    G.DAG_config(input_G, input_C, input_prio)
     """ """
-
     input_n_cores = 2
+
     input_overide_prio = 0
     G.critical_path_config()                  # 关键路径分析
     G.graph_node_position_determine()         # DAG节点位置确定
@@ -520,16 +520,16 @@ if __name__ == "__main__":
     R, alpha_arr, beta_arr = rta.rta_alphabeta_new(input_G, input_C, input_prio, input_n_cores, input_overide_prio)
 
     print(R)
-    print(alpha_arr)
-    print(beta_arr)
+    # print(alpha_arr)
+    # print(beta_arr)
     print('\n')
     # 2.he 2019 方法
-    print('he 2019 方法')
-    he_r = rta.TPDS_rta_new(input_G, input_C, input_prio, input_n_cores)    # 自备优先级算法
-    print(he_r)
+    # print('he 2019 方法')
+    # he_r = rta.TPDS_rta_new(input_G, input_C, input_prio, input_n_cores)    # 自备优先级算法
+    # print(he_r)
     # he_r = rta.TPDS_rta_new_pro(input_G, input_C, input_n_cores)          # 使用其他的优先级
     # print(he_r)
-    print('\n')
+    # print('\n')
     # 3.基础方法
     print('基础方法')
     x = G.response_time_analysis(input_n_cores)
