@@ -43,9 +43,7 @@ class WorkStation(object):
 
 
 def Client(env, name, cw):
-    """
-    客户到达动作站接受服务，结束后离开
-    """
+    """ 客户到达动作站接受服务，结束后离开 """
     print('%s 到达工作站 at %.2f.' % (name, env.now))
     with cw.machine.request() as request:
         yield request

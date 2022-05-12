@@ -42,7 +42,6 @@ class Dispatcher:
         processor.Update_Processor_State(0)  # 初始化系统时间为 0
 
     def Simulation(self):
-
         # 多DAG在多处理器上的运行仿真
         Temp_Current_Time = 0
         Temp_DAG_Set = copy.deepcopy(self.DAG_Set)

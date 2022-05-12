@@ -16,6 +16,22 @@ class DAG_Set:
     def __init__(self):
         self.Dag_Set = []
 
+    #####################################
+    #   随机生成一组DAG
+    #####################################
+    def Random_DAG_Set(self, DAG_count, parallelism_list, critical_path_list):
+        for x in range(0, DAG_count):
+            Temp_DAG = DAG.DAG()
+            Temp_DAG.DAG_ID = "DAG_{}".format(x)
+            Temp_DAG.Priority = x + 1
+            Temp_DAG.parallelism = parallelism_list[x]
+            Temp_DAG.Critical_path = critical_path_list[x]
+            Temp_DAG.gen("mine")
+            Temp_DAG.WCET_random_config()
+            Temp_DAG.priority_random_config()
+            Temp_DAG.critical_path_config()
+            self.Add_DAG(Temp_DAG)
+
     def Add_DAG(self, Dag):
         self.Dag_Set.append(Dag)
 
@@ -488,15 +504,26 @@ class DAG_Set:
         for edge in edges:
             Temp_Dag3.add_edge(edge[0], edge[1], weight=1)
         """
-        G1 = DAG.DAG(Temp_Dag1, "DAG_1", 3)
+        G1 = DAG.DAG()
+        G1.G = Temp_Dag1
+        G1.DAG_ID = "DAG_1"
+        G1.Priority = 3
         G1.critical_path_config()
-        G2 = DAG.DAG(Temp_Dag2, "DAG_2", 2)
+
+        G2 = DAG.DAG()
+        G2.G = Temp_Dag2
+        G2.DAG_ID = "DAG_2"
+        G2.Priority = 2
         G2.critical_path_config()
-        G3 = DAG.DAG(Temp_Dag3, "DAG_3", 1)
+
+        G3 = DAG.DAG()
+        G3.G = Temp_Dag3
+        G3.DAG_ID = "DAG_3"
+        G3.Priority = 1
         G3.critical_path_config()
         self.Add_DAG(G1)
         self.Add_DAG(G2)
-        self.Add_DAG(G3)
+        # self.Add_DAG(G3)
 
 
 if __name__ == "__main__":
