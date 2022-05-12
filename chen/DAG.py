@@ -15,6 +15,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import rta
 import math
+import ast
+import sys
 # Class: DAG (Directed Acyclic Graph Task)
 
 
@@ -501,9 +503,17 @@ if __name__ == "__main__":
     input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
     # input_prio = {1: 9, 2: 8, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3, 8: 2, 9: 1}
     input_prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
+    input_n_cores = 2
     G.DAG_config(input_G, input_C, input_prio)
     """ """
-    input_n_cores = 2
+
+    """"""
+    input_G = ast.literal_eval(sys.argv[1])
+    input_C = ast.literal_eval(sys.argv[2])
+    input_prio = ast.literal_eval(sys.argv[3])
+    input_n_cores = ast.literal_eval(sys.argv[4])
+    overide_prio = ast.literal_eval(sys.argv[5])
+    """"""
 
     input_overide_prio = 0
     G.critical_path_config()                  # 关键路径分析
