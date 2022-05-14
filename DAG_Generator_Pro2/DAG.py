@@ -7,44 +7,14 @@
 # Real-Time Systems Group
 # Hunan University HNU
 ################################################################################
-
+import math
 from random import randint, random, uniform
 import random as rand
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 # Class: DAG (Directed Acyclic Graph Task)
-
-
 class DAG:
-    #####################################
-    #   DAG 参数
-    #   param0  DAG name        ：标注DAG，方便存储及调用
-    #
-    #   param1.1* periodically  ：DAG的周期性质包括 {周期性任务(periodic)； 零星任务(sporadic)； 非周期性任务(aperiodic)}
-    #   param1.2* real_time     ：DAG的实时性包括   {HRT(Hard); SRT(Soft); FRT(Firm)}
-    #   param1.3* cycle_time    ：(1)if periodically == periodic:   cycle_time = DAG的周期时间；
-    #                             (2)if periodically == sporadic:   cycle_time = DAG的最小间隔时间；
-    #                             (3)if periodically == aperiodic:  cycle_time = DAG的释放时间；
-    #   param2* Deadline        ：DAG的相对截止时间#
-    #   param3  DAG G
-    #       param3.1    node的属性 ：
-    #           param3.1.1  Node_num        ：Node_ID    节点号码(自然ID)；
-    #           param3.1.2  rank(level)     ：rank       节点所在层；
-    #           param3.1.3  critic          ：critic     节点是否是关键节点
-    #           param3.1.4* process_costs   ：WCET       可以是节点的执行时间或最差执行时间（WCET）；
-    #           e.g.:self.G.add_node(self_Node_num, Node_ID='job{}'.format(self_Node_num), rank=x, critic=False, WCET=1)
-    #       param3.2    edge的属性 ：
-    #           param3.2.1  communication time：或者可以通过（节点间通信数据量/core间通信带宽）获取；
-    #
-    #   param4  其他参数(输入生成)：
-    #       param4.1    task_num            ： DAG中的节点数量
-    #       param4.2*   parallelism         ： DAG的并行度，生成时的输入 ≥ 最终计算的结果
-    #       param4.3*   Critical_path       ： DAG的关键路径的节点长度（输入）
-    #   param5 其他参数(后期计算)：
-    #       param5.1
-    #####################################
-
     def __init__(self):
         self.name           = 'Tau_{null}'  # DAG save的名称
         self.DAG_ID         = '0'           # DAG的名称
@@ -54,25 +24,33 @@ class DAG:
         # generator mine
         self.parallelism    = 0             # 并行度
         self.Critical_path  = 0             # 关键路径长度
+        self.Periodically   = 'APERIODIC'   # 'PERIODIC'：周期任务
+                                            # 'SPORADIC'：零星任务
+                                            # 'APERIODIC': 非周期任务，一次调用只运行一次，只运行一次
+        self.Real_Time      = 'HRT'         # 'HRT', 'SRT', 'FRT'
+        self.Cycle_Time     = 0             # 如果periodically是periodic则cycle_time为DAG的周期时间；
+                                            # 如果periodically是sporadic则cycle_time为DAG的最小间隔时间；
+                                            # 如果periodically是aperiodic则cycle_time为DAG；
+        self.Deadline       = 0             # DAG的相对截止时间
+        self.Start_Time     = 0             # 默认为0 第一个DAG的到达时间
 
-    # def __init__(self, Dag, Dag_ID, Priority):
-    #     self.name           = 'Tau_{null}'  # DAG的名称
-    #     self.DAG_ID         = Dag_ID        # DAG的名称
-    #     self.G              = Dag           # DAG:-networkX结构
-    #     self.task_num       = 0             # DAG中节点（job）的数量
-    #     self.Priority       = Priority      # 越小等级越高
-    #     # generator mine
-    #     self.parallelism    = 0             # 并行度
-    #     self.Critical_path  = 0             # 关键路径长度
-
-    #   param1.1*                   三种任务的周期属性；
-    Periodically = list(enumerate(['PERIODIC', 'SPORADIC', 'APERIODIC'], start=1))
-    #   param1.2* real_time         三种DAG的实时性包括   {HRT(Hard); SRT(Soft); FRT(Firm)}
-    Real_Time = list(enumerate(['HRT', 'SRT', 'FRT'], start=1))
-
+    #####################################
+    #   DAG 基本功能
+    #####################################
     def get_graph(self):  # 返回G
         return self.G
 
+    #   获取 DAG 中处于就绪态的节点
+    def get_ready_node_list(self):
+        return [x for x in self.G.nodes(data=True) if (x[1].get('state') == 'ready')]
+
+    #   获取 DAG 的节点数量
+    def get_node_num(self):
+        return self.G.number_of_nodes()
+
+    #####################################
+    #   DAG 随机生成函数
+    #####################################
     def gen(self, algorithm):  # 生成 DAG
         if algorithm == "mine":
             self.gen_mine()
@@ -80,23 +58,73 @@ class DAG:
             return 1
         return 0
 
-    def get_ready_node_list(self):
-        return [x for x in self.G.nodes(data=True) if (x[1].get('state') == 'ready')]
+    #####################################
+    #   DAG generator mine 算法 #
+    #####################################
+    def gen_mine(self):
+        assert (self.parallelism >= 1)
+        assert (self.Critical_path >= 3)
+        # 步骤一：initial a new graph G               # e.g. G = nx.DiGraph(Index=self.task_num)
+        #   添加节点；确定rank的节点
+        self_critical_path  = self.Critical_path    # 关键路径长度
+        self_parallelism    = self.parallelism      # 图的并行度
+        self_Node_num       = 0                     # DAG的节点数量
+        self.G.add_node(0, Node_ID='souce', rank=0, critic=False, WCET=1, priority=1, state='blocked')  # 起始节点（1）；rank=0
 
-    # #####################################
-    # #   分配DAG节点的WCET
-    # #   wcet_config
-    # #####################################
-    # def wcet_config(self):
-    #     Max_WCET    = 10
-    #     for node_x in self.G.nodes(data=True):
-    #         node_x[1]['WCET'] = randint(1, Max_WCET)
+        for x in range(1, self_critical_path - 1):
+            m = randint(1, self_parallelism)        # 随机每层的节点数量（不能大于并行度）
+            for y in range(1, m + 1):
+                self_Node_num += 1
+                self.G.add_node(self_Node_num, Node_ID='job{}'.format(self_Node_num), rank=x, critic=False, WCET=1, priority=1, state='blocked')
+        self.G.add_node(self_Node_num + 1, Node_ID='sink', rank=self_critical_path - 1, critic=False, WCET=1, priority=1, state='blocked')
+        self.task_num = self_Node_num + 2  # +2算上source和sink
+        self.G.add_edge(0, 1)
+        for x in range(1, self_critical_path - 1):  # 从第2层开始到倒数第二层
+            ancestors_list      = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') <  x)]
+            descendants_list    = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') >  x)]
+            self_list           = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') == x)]
+            successors_list     = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') == (x + 1))]
+            for y in self_list:
+                k1 = randint(1, len(ancestors_list))                    # 在祖先节点中随机几个节点作为前驱
+                ancestors_group = rand.sample(ancestors_list, k1)
+                k2 = randint(1, len(descendants_list))                  # 在后代节点中随机几个节点作为后继
+                descendants_group = rand.sample(descendants_list, k2)
+                for z in ancestors_group:
+                    self.G.add_edge(z[0], y[0])
+                for z in descendants_group:
+                    self.G.add_edge(y[0], z[0])
+            self.G.add_edge(self_list[0][0], successors_list[0][0])
+        self.name = 'Tau_{:d}'.format(self.task_num)
+        # self.G = nx.DiGraph(self.Matrix)                  # 邻接矩阵生成一个有向图netWorkX；属性全无；
+        # ## transitive reduction 传递约简； ## #
+        # lp = list(nx.DiGraph(self.transitive_reduction_matrix()).edges())     # 1.networkx包
+        lp = list(nx.transitive_reduction(self.G).edges())                  # 2.networkx包
+        self.G.clear_edges()
+        self.G.add_edges_from(lp)
+        # print(np.array(nx.adjacency_matrix(self.G).todense()))
+
+    #####################################
+    #   Transitive reduction函数
+    #   param:      matrix: Adjacency Matrix
+    #   return:     A matrix that has been reduced in transitive
+    #####################################
+    def transitive_reduction_matrix(self):
+        matrix = np.array(nx.adjacency_matrix(self.G).todense())
+        row, columns = matrix.shape
+        assert (row == self.task_num)
+        assert (columns == self.task_num)
+        print("matrix shape is ({0},{1})".format(row, columns))
+        i_test = np.eye(self.task_num).astype(bool)
+        i_matrix = matrix.astype(bool)
+        D = np.power((i_matrix | i_test), self.task_num)  # (M | I)^n
+        D = D.astype(bool) & (~i_test)
+        TR = matrix & (~(np.dot(i_matrix, D)))  # Tr = T ∩ （-（T . D））
+        return nx.DiGraph(TR)
 
     #####################################
     #   关键路径配置
     #####################################
     def critical_path_config(self):
-        # # # # # （1）配置关键路径 # # # # #
         WCET = nx.get_node_attributes(self.G, 'WCET')
         for edge_x in self.G.edges(data=True):
             edge_x[2]['weight'] = WCET[edge_x[1]]
@@ -105,6 +133,30 @@ class DAG:
             if node_xx[0] in node_list:  # 判断是否在关键路径里
                 node_xx[1]['critic'] = True
         # print('关键路径：{0}'.format(node_list))
+
+    #####################################
+    #   Show DAG
+    #####################################
+    def show_dag(self):
+        print("DAG_ID:", self.DAG_ID)                       # 1.打印DAG的ID
+        print("DAG_Nodes_num:", self.G.number_of_nodes())   # 2.打印节点数量
+        print("DAG_Edges_num:", self.G.number_of_edges())   # 打印边的数量
+
+    def node_property(self, node_number):
+        # for node_x in self.G.nodes(data=True):
+        node_x = self.G.node[node_number]
+        assert (node_number == node_x[0])
+        print("node_id", node_x[0], node_number)
+        print("node_Node_ID", node_x[1].get('Node_ID'))
+        print("node_rank", node_x[1].get('rank'))
+        print("node_critic", node_x[1].get('critic'))
+        # self.G.node[0]['critic'] == True
+
+    def print_data(self):
+        # print(self.G.graph)
+        # print(self.G.nodes(data=True))  # 输出所有可能的DAG结果数量；
+        print(self.G.nodes.data(data=True))
+        print(self.G.edges.data(data=True))
 
     #####################################
     #   获取DAG的并行度和关键路径长度
@@ -209,59 +261,6 @@ class DAG:
         # print("reciprocity:", nx.reciprocity(self.G))  # 计算有向图中的互反性（reciprocity）,DAG不允许自反！！！。
         # print("overall_reciprocity:", nx.overall_reciprocity(self.G))  #计算全图的自反性
 
-    #####################################
-    #   Show DAG
-    #####################################
-    def show_dag(self):
-        # 1.打印DAG的ID
-        print("DAG_ID:", self.DAG_ID)
-        # 2.打印节点数量
-        print("DAG_Nodes_num:", self.G.number_of_nodes())
-        # 打印边的数量
-        print("DAG_Edges_num:", self.G.number_of_edges())
-
-    def node_property(self, node_number):
-        # for node_x in self.G.nodes(data=True):
-        node_x = self.G.node[node_number]
-        assert (node_number == node_x[0])
-        print("node_id", node_x[0], node_number)
-        print("node_Node_ID", node_x[1].get('Node_ID'))
-        print("node_rank", node_x[1].get('rank'))
-        print("node_critic", node_x[1].get('critic'))
-        # self.G.node[0]['critic'] == True
-
-    def print_data(self):
-        # print(self.G.graph)
-        # print(self.G.nodes(data=True))  # 输出所有可能的DAG结果数量；
-        print(self.G.nodes.data(data=True))
-        print(self.G.edges.data(data=True))
-
-    #####################################
-    #   get DAG parameter
-    #####################################
-    def get_node_num(self):
-        return self.G.number_of_nodes()
-
-    #####################################
-    #   Transitive reduction函数
-    #   param:
-    #       matrix: Adjacency Matrix
-    #   return:
-    #       A matrix that has been reduced in transitive
-    #####################################
-    def transitive_reduction_matrix(self):
-        matrix = np.array(nx.adjacency_matrix(self.G).todense())
-        row, columns = matrix.shape
-        assert (row == self.task_num)
-        assert (columns == self.task_num)
-        print("matrix shape is ({0},{1})".format(row, columns))
-        i_test = np.eye(self.task_num).astype(bool)
-        i_matrix = matrix.astype(bool)
-        D = np.power((i_matrix | i_test), self.task_num)  # (M | I)^n
-        D = D.astype(bool) & (~i_test)
-        TR = matrix & (~(np.dot(i_matrix, D)))  # Tr = T ∩ （-（T . D））
-        return nx.DiGraph(TR)
-
     #########################################
     #   DAG graph_node_position_determine
     #   参数：
@@ -284,7 +283,7 @@ class DAG:
                 node_ID = rank_list[z1][z2]
                 sub_node = self.G.nodes[node_ID]
                 n_pos[node_ID] = [(z1 + 0.5) * 120 / len(rank_list), (z2 + 0.5) * 120 / len(rank_list[z1])]
-                n_map[node_ID] = 'ID:{0} \n WCET:{1} \n prio:{2}'.format(
+                n_map[node_ID] = "ID:{0} \n WCET:{1} \n prio:{2}".format(
                     sub_node.get('Node_ID'), sub_node.get('WCET'), sub_node.get('priority'))
                 if sub_node['critic']:
                     color = 'green'
@@ -298,86 +297,54 @@ class DAG:
         nx.draw_networkx_labels(self.G, n_pos, labels=n_map, font_size=5, font_color='k')             # 标签
 
     #####################################
-    #   DAG generator 算法3#
+    #   WCET 配置算法#
     #####################################
-    def gen_mine(self):
-        assert (self.parallelism >= 1)
-        assert (self.Critical_path >= 3)
-        # 步骤一：initial a new graph G               # e.g. G = nx.DiGraph(Index=self.task_num)
-        #   添加节点；确定rank的节点
-        self_critical_path  = self.Critical_path    # 关键路径长度
-        self_parallelism    = self.parallelism      # 图的并行度
-        self_Node_num       = 0                     # DAG的节点数量
-        self.G.add_node(0, Node_ID='souce', rank=0, critic=False, WCET=1, priority=1, state='blocked')  # 起始节点（1）；rank=0
+    def WCET_Config(self, WCET_Config_type):
 
-        for x in range(1, self_critical_path - 1):
-            m = randint(1, self_parallelism)        # 随机每层的节点数量（不能大于并行度）
-            for y in range(1, m + 1):
-                self_Node_num += 1
-                self.G.add_node(self_Node_num, Node_ID='job{}'.format(self_Node_num), rank=x, critic=False, WCET=1, priority=1, state='blocked')
-        self.G.add_node(self_Node_num + 1, Node_ID='sink', rank=self_critical_path - 1, critic=False, WCET=1, priority=1, state='blocked')
-        self.task_num = self_Node_num + 2  # +2算上source和sink
-        self.G.add_edge(0, 1)
-        for x in range(1, self_critical_path - 1):  # 从第2层开始到倒数第二层
-            ancestors_list      = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') <  x)]
-            descendants_list    = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') >  x)]
-            self_list           = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') == x)]
-            successors_list     = [node_x for node_x in self.G.nodes(data=True) if (node_x[1].get('rank') == (x + 1))]
-            for y in self_list:
-                k1 = randint(1, len(ancestors_list))                    # 在祖先节点中随机几个节点作为前驱
-                ancestors_group = rand.sample(ancestors_list, k1)
-                k2 = randint(1, len(descendants_list))                  # 在后代节点中随机几个节点作为后继
-                descendants_group = rand.sample(descendants_list, k2)
-                for z in ancestors_group:
-                    self.G.add_edge(z[0], y[0])
-                for z in descendants_group:
-                    self.G.add_edge(y[0], z[0])
-            self.G.add_edge(self_list[0][0], successors_list[0][0])
-        self.name = 'Tau_{:d}'.format(self.task_num)
-        # self.G = nx.DiGraph(self.Matrix)                  # 邻接矩阵生成一个有向图netWorkX；属性全无；
-        # ## transitive reduction 传递约简； ## #
-        # lp = list(nx.DiGraph(self.transitive_reduction_matrix()).edges())     # 1.networkx包
-        lp = list(nx.transitive_reduction(self.G).edges())                  # 2.networkx包
-        self.G.clear_edges()
-        self.G.add_edges_from(lp)
-        # print(np.array(nx.adjacency_matrix(self.G).todense()))
+        if WCET_Config_type == "random":
+            self.wcet_random_config()
+        else:
+            pass
+
+    def wcet_random_config(self):
+        for x in self.G.nodes(data=True):
+            x[1]['WCET'] = rand.randint(100, 1000)
+            # [x for x in self.G.nodes(data=True) if (x[1].get('state') == 'ready')]
 
     #####################################
-    #   自定义 DAG 算法#
+    #   优先级 配置算法#
     #####################################
-    def user_defined_dag(self):
-        # 节点号； 节点名； 节点优权重； 节点优先级
-        self.parallelism = 4
-        self.Critical_path = 4
-        HE_2019_nodes = [[1, 'V1', 1, 1],
-                         [2, 'V2', 7, 5],
-                         [3, 'V3', 3, 6],
-                         [4, 'V4', 3, 7],
-                         [5, 'V5', 6, 2],
-                         [6, 'V6', 9, 3],
-                         [7, 'V7', 2, 4],
-                         [8, 'V8', 1, 8]]
-        # for x in self_list:
-        # self.G.add_node(0, Node_ID='souce_node', rank=0, critic=False, WCET=1)  # 起始节点（1）；rank=0
-        for node_x in HE_2019_nodes:
-            self.G.add_node(node_x[0], Node_ID=node_x[1], rank=0, critic=False, WCET=node_x[2], priority=node_x[3])
+    def Priority_Config(self, Priority_Config_type):
+        if Priority_Config_type == "random":
+            self.priority_random_config()
+        else:
+            pass
 
-        edges = [(1, 2), (1, 3), (1, 4), (1, 5), (1, 6),
-                 (5, 7), (6, 7),
-                 (2, 8), (3, 8), (4, 8), (7, 8) ]
-        for edge in edges:
-            self.G.add_edge(edge[0], edge[1], weight=1)
-        # self.G.add_edges_from(edges)
+    def priority_random_config(self):
+        priority_random_list = list(range(0, self.G.number_of_nodes()))
+        np.random.shuffle(priority_random_list)
+        for x in self.G.nodes(data=True):
+            x[1]['priority'] = priority_random_list.pop()
 
+    #####################################
+    #   响应时间分析算法#
+    #####################################
+    def Response_Time_analysis(self, RTA_Type, core_num):
+        if RTA_Type ==  "non-preemptive":
+            return self.rta_basics_non_preemptive(core_num)
+        elif RTA_Type ==  "preemptive":
+            return self.rta_basics_preemptive(core_num)
+        else:
+            print("RTA_Type input error!")
 
-    def response_time_analysis(self, core_num):
+    def rta_basics_non_preemptive(self, core_num):
         node_list = list(self.G.nodes())
         paths = list(nx.all_simple_paths(self.G, node_list[0], node_list[-1]))
 
         interference_node_list = []
-        ret_path_and_rta = []
+        # ret_path_and_rta = []
+        ret_path_and_rta = [0, 0, 0, [], []]
         for x in paths:
-            # print(x)
             temp_interference_node_list = []
             temp_path_weight = 0
             for y in x:
@@ -399,20 +366,58 @@ class DAG:
             interference_node_list.append(temp_interference_node_list)
             temp_rta = temp_path_weight + temp_inter_weight/core_num
             # 计算此路径的RTA
-            ret_path_and_rta.append((temp_rta, temp_path_weight, temp_inter_weight, x, temp_interference_node_list))
-        return ret_path_and_rta
+            # ret_path_and_rta.append((temp_rta, temp_path_weight, temp_inter_weight, x, temp_interference_node_list))
+            if temp_rta > ret_path_and_rta[0]:
+                ret_path_and_rta[0] = temp_rta
+                ret_path_and_rta[1] = temp_path_weight
+                ret_path_and_rta[2] = temp_inter_weight
+                ret_path_and_rta[3] = x
+                ret_path_and_rta[4] = temp_interference_node_list
+        return math.ceil(ret_path_and_rta[0])
 
-    def WCET_random_config(self):
-        for x in self.G.nodes(data=True):
-            x[1]['WCET'] = rand.randint(100, 1000)
-            # [x for x in self.G.nodes(data=True) if (x[1].get('state') == 'ready')]
+    def rta_basics_preemptive(self, core_num):
+        node_list = list(self.G.nodes())
+        paths = list(nx.all_simple_paths(self.G, node_list[0], node_list[-1]))
 
-    def priority_random_config(self):
-        priority_random_list = list(range(0, self.G.number_of_nodes()))
-        np.random.shuffle(priority_random_list)
-        for x in self.G.nodes(data=True):
-            x[1]['priority'] = priority_random_list.pop()
-
+        interference_node_list = []
+        ret_path_and_rta = [0, 0, 0, [], []]
+        for x in paths:
+            temp_interference_node_list = []
+            reserve_node_list = {}
+            temp_path_weight = 0
+            temp_WCET = []
+            for y in x:
+                temp_all_node = self.G.nodes(data=True)
+                temp_ance = list(nx.ancestors(self.G, y))
+                temp_desc = list(nx.descendants(self.G, y))
+                temp_self = x
+                sub_node = self.G.nodes[y]
+                temp_path_weight += sub_node.get('WCET')
+                temp_WCET.append(sub_node.get('WCET'))
+                for z in temp_all_node:
+                    if (z[0] not in temp_ance) and (z[0] not in temp_desc) and (z[0] not in temp_self):  # 判断z是否是干扰节点
+                        if z[1]['priority'] < sub_node.get('priority'):   # 判断此z的优先级是否大于y
+                            if z not in temp_interference_node_list:            # 判断此z是否已经加入
+                                temp_interference_node_list.append(z)
+                        else:
+                            reserve_node_list[z[0]] = z[1]['WCET']
+            t_reserve_list = sorted(reserve_node_list.items(), key=lambda x: x[1])
+            add_reserve = 0
+            for y in range(0, min(core_num, len(t_reserve_list))):
+                add_reserve += t_reserve_list[y][1]
+            temp_inter_weight = 0
+            for y in temp_interference_node_list:
+                temp_inter_weight += y[1]['WCET']
+            interference_node_list.append(temp_interference_node_list)
+            temp_rta = temp_path_weight + (temp_inter_weight+add_reserve)/core_num
+            # 计算此路径的RTA
+            if temp_rta > ret_path_and_rta[0]:
+                ret_path_and_rta[0] = temp_rta
+                ret_path_and_rta[1] = temp_path_weight
+                ret_path_and_rta[2] = temp_inter_weight
+                ret_path_and_rta[3] = x
+                ret_path_and_rta[4] = temp_interference_node_list
+        return math.ceil(ret_path_and_rta[0])
 
 if __name__ == "__main__":
     # Parallelism = input("请输入DAG的并行度：")

@@ -59,6 +59,15 @@ class DAG_Set:
         return len(self.Dag_Set)
 
     #####################################
+    #   根据DAG_ID 获取DAG
+    #####################################
+    def get_dag(self, DAG_ID):
+        for x in self.Dag_Set:
+            if x.DAG_ID == DAG_ID:
+                return x
+        return False
+
+    #####################################
     #   获取DAG集合中所有节点的数量#
     #####################################
     def get_node_num(self):
@@ -90,18 +99,18 @@ class DAG_Set:
     def get_priorituy_ready_node_list(self):
         temp_dict = {}
         r_dict = {}
+        ret_list = []
         for x in self.Dag_Set:
             temp_dict[x] = x.Priority
         temp_dict = sorted(temp_dict.items(), key=lambda x: x[1])
         for k, v in temp_dict:
             DAG_ID = k.DAG_ID
             temp_ready_list = k.get_ready_node_list()
-            if len(temp_ready_list) > 0:
-                for x in range(0,len(temp_ready_list)):
-                    r_dict[x] = temp_ready_list[x][1].get('priority')
-                ret = sorted(r_dict.items(), key=lambda x: x[1])
-                return DAG_ID, temp_ready_list[ret[0][0]]
-        return False, False
+            if len(temp_ready_list) == 0:
+                continue
+            ret_list.append( (DAG_ID, temp_ready_list) )
+        return ret_list
+        # return False, False
 
     def delet_DAG_Node(self, DAG_ID, Node_ID):
         for x in self.Dag_Set:
@@ -122,6 +131,10 @@ class DAG_Set:
     #####################################
     def user_defined_dag(self):
         """
+    #####################################
+    #   自定义 DAG 算法   #
+    #####################################
+    def user_defined_dag(self):
         # 节点号； 节点名； 节点优权重； 节点优先级
         HE_2019_nodes = [[1, 'V1', 1, 1],
                          [2, 'V2', 7, 5],

@@ -54,21 +54,17 @@ class DAG:
         # generator mine
         self.parallelism    = 0             # 并行度
         self.Critical_path  = 0             # 关键路径长度
+        self.Periodically   = 'APERIODIC'   # 'PERIODIC'：周期任务
+                                            # 'SPORADIC'：零星任务
+                                            # 'APERIODIC': 非周期任务，一次调用只运行一次，只运行一次
+        self.Real_Time      = 'HRT'         # 'HRT', 'SRT', 'FRT'
+        self.Cycle_Time     = 0             # 如果periodically是periodic则cycle_time为DAG的周期时间；
+                                            # 如果periodically是sporadic则cycle_time为DAG的最小间隔时间；
+                                            # 如果periodically是aperiodic则cycle_time为DAG；
+        self.Deadline       = 0             # DAG的相对截止时间
+        self.Start_Time     = 0             # 默认为0 第一个DAG的到达时间
 
-    # def __init__(self, Dag, Dag_ID, Priority):
-    #     self.name           = 'Tau_{null}'  # DAG的名称
-    #     self.DAG_ID         = Dag_ID        # DAG的名称
-    #     self.G              = Dag           # DAG:-networkX结构
-    #     self.task_num       = 0             # DAG中节点（job）的数量
-    #     self.Priority       = Priority      # 越小等级越高
-    #     # generator mine
-    #     self.parallelism    = 0             # 并行度
-    #     self.Critical_path  = 0             # 关键路径长度
 
-    #   param1.1*                   三种任务的周期属性；
-    Periodically = list(enumerate(['PERIODIC', 'SPORADIC', 'APERIODIC'], start=1))
-    #   param1.2* real_time         三种DAG的实时性包括   {HRT(Hard); SRT(Soft); FRT(Firm)}
-    Real_Time = list(enumerate(['HRT', 'SRT', 'FRT'], start=1))
 
     def get_graph(self):  # 返回G
         return self.G
@@ -279,21 +275,18 @@ class DAG:
         n_map           = {}
         c_dicy          = {}
         rank_list = [sorted(generation) for generation in nx.topological_generations(self.G)]
-        # print('拓扑分层：{0}'.format(rank_list))
         for z1 in range(0, len(rank_list)):
             for z2 in range(0, len(rank_list[z1])):
                 node_ID = rank_list[z1][z2]
                 sub_node = self.G.nodes[node_ID]
                 n_pos[node_ID] = [(z1 + 0.5) * 120 / len(rank_list), (z2 + 0.5) * 120 / len(rank_list[z1])]
-                n_map[node_ID] = 'ID:{0} \n WCET:{1}'.format(sub_node.get('Node_ID'), sub_node.get('WCET'))
+                n_map[node_ID] = "ID:{0} \n WCET:{1} \n prio:{2}".format(
+                    sub_node.get('Node_ID'), sub_node.get('WCET'), sub_node.get('priority'))
                 if sub_node['critic']:
                     color = 'green'
                 else:
                     color = '#1f78b4'
-                # color_map.append(color)
                 c_dicy[node_ID] = color
-        # n_pos = dict(sorted(n_pos.items(), key=lambda x: x[0]))
-        # n_map = dict(sorted(n_map.items(), key=lambda x: x[0]))
         c_dicy = dict(sorted(c_dicy.items(), key=lambda x: x[0]))
         color_map = [x for x in c_dicy.values()]
         nx.draw_networkx_nodes(self.G, n_pos, node_color=color_map, node_size=800, node_shape='o')    # 绘制节点
@@ -405,10 +398,29 @@ class DAG:
             ret_path_and_rta.append((temp_rta, temp_path_weight, temp_inter_weight, x, temp_interference_node_list))
         return ret_path_and_rta
 
+    #####################################
+    #   WCET 配置算法#
+    #####################################
+    def WCET_Config(self, WCET_Config_type):
+
+        if WCET_Config_type == "random":
+            self.WCET_random_config()
+        else:
+            pass
+
     def WCET_random_config(self):
         for x in self.G.nodes(data=True):
             x[1]['WCET'] = rand.randint(100, 1000)
             # [x for x in self.G.nodes(data=True) if (x[1].get('state') == 'ready')]
+
+    #####################################
+    #   优先级 配置算法#
+    #####################################
+    def Priority_Config(self, Priority_Config_type):
+        if Priority_Config_type == "random":
+            self.priority_random_config()
+        else:
+            pass
 
     def priority_random_config(self):
         priority_random_list = list(range(0, self.G.number_of_nodes()))
