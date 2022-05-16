@@ -101,9 +101,10 @@ if __name__ == "__main__":
     # DAG = user_dag()
     DAG_Set = DAG_Set.DAG_Set()
     # ####### 1.手动DAG set ######## #
-    DAG_Set.user_defined_dag()
+    # DAG_Set.user_defined_dag()
     # ####### 2.随机生成DAG set ##### #
-    # DAG_Set.Random_DAG_Set(DAG_count=4, parallelism_list=[3, 4, 5,6], critical_path_list=[3, 4, 5, 6])
-    env.process(setup(env, DAG_Set, core_num=4))  # 开始执行!
+    # DAG_Set.Random_DAG_Set(DAG_count=4, parallelism_list=[3, 4, 5, 6], critical_path_list=[3, 4, 5, 6])
+    DAG_Set.Random_DAG_Set(DAG_count=1, parallelism_list=[3], critical_path_list=[3])
+    env.process(setup(env, DAG_Set, core_num=2))  # 开始执行!
     env.run(until=10000000)
 

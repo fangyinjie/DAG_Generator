@@ -13,7 +13,7 @@ import random as rand
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-import rta
+import rta1
 import math
 import ast
 import sys
@@ -499,21 +499,24 @@ if __name__ == "__main__":
     """     """
 
     """ """
-    input_G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
-    input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
-    # input_prio = {1: 9, 2: 8, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3, 8: 2, 9: 1}
-    input_prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
+    # input_G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
+    # input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
+    # # input_prio = {1: 9, 2: 8, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3, 8: 2, 9: 1}
+    # input_prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
     input_n_cores = 2
-    G.DAG_config(input_G, input_C, input_prio)
+    # G.DAG_config(input_G, input_C, input_prio)
+    input_G = {1: [2, 3], 2: [4], 3: [4], 4: []}
+    input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826}
+
     """ """
 
-    """"""
+    """ 
     input_G = ast.literal_eval(sys.argv[1])
     input_C = ast.literal_eval(sys.argv[2])
     input_prio = ast.literal_eval(sys.argv[3])
     input_n_cores = ast.literal_eval(sys.argv[4])
     overide_prio = ast.literal_eval(sys.argv[5])
-    """"""
+    """
 
     input_overide_prio = 0
     G.critical_path_config()                  # 关键路径分析
@@ -522,21 +525,27 @@ if __name__ == "__main__":
     #################
     # 响应时间分析
     #################
-    # 1.zhao 2020 方法
-    print('zhao 2020 方法')
-    R, alpha_arr, beta_arr = rta.rta_alphabeta_new(input_G, input_C, input_prio, input_n_cores, input_overide_prio)
-
-    print(R)
-    # print(alpha_arr)
-    # print(beta_arr)
-    print('\n')
-    # 2.he 2019 方法
-    # print('he 2019 方法')
+    # 1.he 2019 方法
+    print('he 2019 方法')
+    # he_p = rta.Eligiblity_Ordering_PA_legacy(input_G, input_C)
+    R, alpha_arr, beta_arr = rta1.rta_alphabeta_new(input_G, input_C, prio_=[], m=input_n_cores, EOPA=True, TPDS=False)
+    he_p = rta1.Eligiblity_Ordering_PA(input_G, input_C)
     # he_r = rta.TPDS_rta_new(input_G, input_C, input_prio, input_n_cores)    # 自备优先级算法
     # print(he_r)
     # he_r = rta.TPDS_rta_new_pro(input_G, input_C, input_n_cores)          # 使用其他的优先级
     # print(he_r)
-    # print('\n')
+    print(he_p)
+    print('\n')
+
+    # 2.zhao 2020 方法
+    print('zhao 2020 方法')
+    # def TPDS_rta(G_dict, C_dict, m):
+    R = rta1.TPDS_rta(input_G, input_C, input_n_cores)
+    print(R)
+    # print(alpha_arr)
+    # print(beta_arr)
+    print('\n')
+
     # 3.基础方法
     print('基础方法')
     x = G.response_time_analysis(input_n_cores)

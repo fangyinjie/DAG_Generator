@@ -395,8 +395,7 @@ def find_G_theta_i_star(G, providers, consumers, i):
 
 
 def rta_alphabeta_new(G_, C_, prio_, m, overide_prio=0, EOPA=False, TPDS=False):
-    """ Response time analysis using alpha_beta
-    """
+    """ Response time analysis using alpha_beta"""
     # --------------------------------------------------------------------------
     # I. load the DAG task
     # G_dict, C_dict, C_array, lamda, VN_array, L, W = load_task(task_idx)
@@ -1807,13 +1806,14 @@ def TPDS_Ordering_PA(G, C):
     return prio
 
 
-def TPDS_rta(task_idx, m):
+# def TPDS_rta(task_idx, m):
+def TPDS_rta(G_dict,C_dict,m):
     """ Response time analysis in:
     Qingqiang He, et. al, Intra-Task Priority Assignment in Real-Time Scheduling of DAG Tasks on Multi-cores, 2019
     """
     # --------------------------------------------------------------------------
     # I. load the DAG task
-    G_dict, C_dict, C_array, lamda, VN_array, L, W = load_task(task_idx)
+    # G_dict, C_dict, C_array, lamda, VN_array, L, W = load_task(task_idx)
 
     # --------------------------------------------------------------------------
     # II. assignment priorities
@@ -2247,11 +2247,11 @@ if __name__ == "__main__":
 
     # use the intrepreter to decode code (!the input strings have to be error-free!)
     """"""
-    G = ast.literal_eval(sys.argv[1])
-    C = ast.literal_eval(sys.argv[2])
-    prio = ast.literal_eval(sys.argv[3])
-    n_cores = ast.literal_eval(sys.argv[4])
-    overide_prio = ast.literal_eval(sys.argv[5])
+    # G = ast.literal_eval(sys.argv[1])
+    # C = ast.literal_eval(sys.argv[2])
+    # prio = ast.literal_eval(sys.argv[3])
+    # n_cores = ast.literal_eval(sys.argv[4])
+    # overide_prio = ast.literal_eval(sys.argv[5])
     """"""
     # test vector
     G = {1:[2,3,4,5,9],2:[9],3:[6,7,8],4:[7],5:[7,8],6:[9],7:[9],8:[9],9:[]}
@@ -2264,6 +2264,5 @@ if __name__ == "__main__":
     #print(G)
     #print(C)
     #print(prio)
-
     R, alpha_arr, beta_arr = rta_alphabeta_new(G, C, prio, n_cores, overide_prio)
     print(R)

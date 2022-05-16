@@ -326,6 +326,11 @@ class DAG:
         for x in self.G.nodes(data=True):
             x[1]['priority'] = priority_random_list.pop()
 
+    def priority_mine_config(self):
+        priority_random_list = list(range(0, self.G.number_of_nodes()))
+        np.random.shuffle(priority_random_list)
+        for x in self.G.nodes(data=True):
+            x[1]['priority'] = priority_random_list.pop()
     #####################################
     #   响应时间分析算法#
     #####################################

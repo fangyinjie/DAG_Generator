@@ -317,8 +317,18 @@ class DAG:
     def Priority_Config(self, Priority_Config_type):
         if Priority_Config_type == "random":
             self.priority_random_config()
+        elif Priority_Config_type == "Zhao":
+            self.priority_Zhao_config()
+        elif Priority_Config_type == "He2019":
+            self.priority_He2019_config()
+        elif Priority_Config_type == "He2021":
+            self.priority_He2021_config()
+        elif Priority_Config_type == "Chen":
+            self.priority_Chen_config()
+        elif Priority_Config_type == "Mine":
+            self.priority_Mine_config()
         else:
-            pass
+            print("priority config error!\n")
 
     def priority_random_config(self):
         priority_random_list = list(range(0, self.G.number_of_nodes()))
@@ -326,6 +336,20 @@ class DAG:
         for x in self.G.nodes(data=True):
             x[1]['priority'] = priority_random_list.pop()
 
+    def priority_Zhao_config(self):
+        pass
+
+    def priority_He2019_config(self):
+        pass
+
+    def priority_He2021_config(self):
+        pass
+
+    def priority_Chen_config(self):
+        pass
+
+    def priority_Mine_config(self):
+        pass
     #####################################
     #   响应时间分析算法#
     #####################################

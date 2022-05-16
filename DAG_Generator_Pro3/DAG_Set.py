@@ -522,6 +522,31 @@ class DAG_Set:
         for edge in edges:
             Temp_Dag3.add_edge(edge[0], edge[1], weight=1)
         """
+
+
+        # 自制的
+        Temp_Dag_mine = nx.DiGraph()
+        # node_list = [[1, 'Job-1', 9,  1],
+        #              [2, 'Job-2', 10, 2],
+        #              [3, 'Job-3', 4,  3],
+        #              [4, 'Job-4', 8,  6],
+        #              [5, 'Job-5', 11, 4],
+        #              [6, 'Job-6', 6,  5],
+        #              [7, 'Job-7', 5,  7]]
+        node_list = [[1, 'Job-1', 9,  1],
+                     [2, 'Job-2', 10, 2],
+                     [3, 'Job-3', 4,  5],
+                     [4, 'Job-4', 8,  4],
+                     [5, 'Job-5', 11, 3],
+                     [6, 'Job-6', 6,  6],
+                     [7, 'Job-7', 5,  7]]
+        for node_x in node_list:
+            Temp_Dag_mine.add_node(node_x[0], Node_ID=node_x[1], rank=0,
+                               critic=False, WCET=node_x[2], priority=node_x[3], state='blocked')
+        edges = [(1, 2), (1, 3), (1, 4), (2, 5), (3, 5), (5, 6), (6, 7), (4, 7)]
+        for edge in edges:
+            Temp_Dag_mine.add_edge(edge[0], edge[1], weight=1)
+
         G1 = DAG.DAG()
         G1.G = Temp_Dag1
         G1.DAG_ID = "DAG_1"
@@ -539,9 +564,17 @@ class DAG_Set:
         G3.DAG_ID = "DAG_3"
         G3.Priority = 1
         G3.critical_path_config()
-        self.Add_DAG(G1)
-        self.Add_DAG(G2)
-        # self.Add_DAG(G3)
+
+        G4 = DAG.DAG()
+        G4.G = Temp_Dag_mine
+        G4.DAG_ID = "DAG_mine"
+        G4.Priority = 1
+        G4.critical_path_config()
+
+        # self.Add_DAG(G1)
+        # self.Add_DAG(G2)
+        self.Add_DAG(G3)
+        # self.Add_DAG(G4)
 
 
 if __name__ == "__main__":
