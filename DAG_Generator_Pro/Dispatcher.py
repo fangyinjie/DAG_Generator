@@ -18,6 +18,11 @@ class Dispatcher_Workspace(object):
         self.Dag_Set.Status_Dataup()  # 更新节点状态，所有前驱为0的节点进入就绪态
         self.makespan_dict = {}
         self.Temp_DAG_Set = copy.deepcopy(self.Dag_Set)
+        self.env.process((pstore.put(simpy.PriorityItem(0, item)) for item in items))
+
+
+    # Unorderable items are inserted with same priority.
+    env.process((pstore.put(simpy.PriorityItem(0, item)) for item in items))
 
     # 每个core的运作，系统中有几个core就有几个Core_act进程
     def Core_act(self, environment, core_ID):

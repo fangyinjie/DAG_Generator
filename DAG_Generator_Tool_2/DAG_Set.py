@@ -105,7 +105,8 @@ class DAG_Set:
             self.G.add_edge(edge[0], edge[1], weight=1)
         """
 
-        """
+        """         """
+
         # 模块1-场景1（2核1流）-情况1 DAG
         # 节点号； 节点名； 节点优权重； 节点优先级
         Temp_Dag1 = nx.DiGraph()
@@ -155,20 +156,20 @@ class DAG_Set:
         Temp_Dag2.add_node(10, Node_ID='Job-10(2)',  rank=0, critic=False, WCET=36392,  priority=5, state='blocked')
         Temp_Dag2.add_node(11, Node_ID='Job-10(3)',  rank=0, critic=False, WCET=36392,  priority=16, state='blocked')
         Temp_Dag2.add_node(12, Node_ID='Job-10(4)',  rank=0, critic=False, WCET=36392,  priority=17, state='blocked')
-        Temp_Dag2.add_node(13, Node_ID='Job-4-2(1)', rank=0, critic=False, WCET=127908, priority=3, state='blocked')
-        Temp_Dag2.add_node(14, Node_ID='Job-4-2(2)', rank=0, critic=False, WCET=127908, priority=15, state='blocked')
+        Temp_Dag2.add_node(13, Node_ID='Job-4-2(1)', rank=0, critic=False, WCET=36392, priority=3, state='blocked')
+        Temp_Dag2.add_node(14, Node_ID='Job-4-2(2)', rank=0, critic=False, WCET=36392, priority=15, state='blocked')
         Temp_Dag2.add_node(15, Node_ID='Job-4-3(1)', rank=0, critic=False, WCET=292952, priority=6, state='blocked')
         Temp_Dag2.add_node(16, Node_ID='Job-4-3(2)', rank=0, critic=False, WCET=292952, priority=18, state='blocked')
-        Temp_Dag2.add_node(17, Node_ID='Job-4-4(1)', rank=0, critic=False, WCET=172964, priority=7, state='blocked')
-        Temp_Dag2.add_node(18, Node_ID='Job-4-4(2)', rank=0, critic=False, WCET=172964, priority=19, state='blocked')
+        Temp_Dag2.add_node(17, Node_ID='Job-4-4(1)', rank=0, critic=False, WCET=90936, priority=7, state='blocked')
+        Temp_Dag2.add_node(18, Node_ID='Job-4-4(2)', rank=0, critic=False, WCET=90936, priority=19, state='blocked')
         Temp_Dag2.add_node(19, Node_ID='Job-11(1)',  rank=0, critic=False, WCET=90936,  priority=8, state='blocked')
         Temp_Dag2.add_node(20, Node_ID='Job-11(2)',  rank=0, critic=False, WCET=90936,  priority=9, state='blocked')
         Temp_Dag2.add_node(21, Node_ID='Job-11(3)',  rank=0, critic=False, WCET=90936,  priority=20, state='blocked')
         Temp_Dag2.add_node(22, Node_ID='Job-11(4)',  rank=0, critic=False, WCET=90936,  priority=21, state='blocked')
         Temp_Dag2.add_node(23, Node_ID='Job-4-5(1)', rank=0, critic=False, WCET=22264,  priority=10, state='blocked')
         Temp_Dag2.add_node(24, Node_ID='Job-4-5(2)', rank=0, critic=False, WCET=22264,  priority=22, state='blocked')
-        Temp_Dag2.add_node(25, Node_ID='Job-4-6(1)', rank=0, critic=False, WCET=126632, priority=11, state='blocked')
-        Temp_Dag2.add_node(26, Node_ID='Job-4-6(2)', rank=0, critic=False, WCET=126632, priority=23, state='blocked')
+        Temp_Dag2.add_node(25, Node_ID='Job-4-6(1)', rank=0, critic=False, WCET=32136, priority=11, state='blocked')
+        Temp_Dag2.add_node(26, Node_ID='Job-4-6(2)', rank=0, critic=False, WCET=32136, priority=23, state='blocked')
         Temp_Dag2.add_node(27, Node_ID='Job-12(1)',  rank=0, critic=False, WCET=32136,  priority=12, state='blocked')
         Temp_Dag2.add_node(28, Node_ID='Job-12(2)',  rank=0, critic=False, WCET=32136,  priority=13, state='blocked')
         Temp_Dag2.add_node(29, Node_ID='Job-12(3)',  rank=0, critic=False, WCET=32136,  priority=24, state='blocked')
@@ -219,7 +220,7 @@ class DAG_Set:
         Temp_Dag2.add_edge(26, 32, weight=1)
         Temp_Dag2.add_edge(29, 32, weight=1)
         Temp_Dag2.add_edge(30, 32, weight=1)
-        """
+        """ """
         # blocked ready running
         """
          # 模块1-场景1（2核1流）-情况2 DAG
@@ -255,7 +256,7 @@ class DAG_Set:
         Temp_Dag2.add_edge(1, 8, weight=1)
 """
         # 模块2-场景1（2核1流）-情况1 DAG
-        """    """
+        """ 
         Temp_Dag1 = nx.DiGraph()
         node_list = [[1, 'Job-0(1)',    3032,   1],
                      [2, 'Job-1(1)',     196196, 2],
@@ -417,7 +418,7 @@ class DAG_Set:
                  ]
         for edge in edge1:
             Temp_Dag3.add_edge(edge[0], edge[1], weight=1)
-        """   """
+        """
         # 模块2-场景1（2核1流）-情况2 DAG
         """
         Temp_Dag1 = nx.DiGraph()
@@ -456,12 +457,24 @@ class DAG_Set:
         for edge in edges:
             Temp_Dag3.add_edge(edge[0], edge[1], weight=1)
         """
-        G1 = DAG.DAG(Temp_Dag1, "DAG_1", 3)
+        G1 = DAG.DAG()
+        G1.G = Temp_Dag1
+        G1.DAG_ID = "DAG_1"
+        G1.Priority = 3
         G1.critical_path_config()
-        G2 = DAG.DAG(Temp_Dag2, "DAG_2", 2)
+
+        G2 = DAG.DAG()
+        G2.G = Temp_Dag2
+        G2.DAG_ID = "DAG_2"
+        G2.Priority = 2
         G2.critical_path_config()
-        G3 = DAG.DAG(Temp_Dag3, "DAG_3", 1)
-        G3.critical_path_config()
+
+        # G1 = DAG.DAG(Temp_Dag1, "DAG_1", 3)
+        # G1.critical_path_config()
+        # G2 = DAG.DAG(Temp_Dag2, "DAG_2", 2)
+        # G2.critical_path_config()
+        # G3 = DAG.DAG(Temp_Dag3, "DAG_3", 1)
+        # G3.critical_path_config()
         self.Add_DAG(G1)
         self.Add_DAG(G2)
         # self.Add_DAG(G3)

@@ -110,7 +110,7 @@ class Dispatcher:
 
 if __name__ == "__main__":
     # 1.Processor initial
-    proc = Processor.Processor([3], 'GD_32')
+    proc = Processor.Processor([4], 'GD_32')
     # 2.Dag_Set initial
     ds = DAG_Set.DAG_Set()
     ds.user_defined_dag()
