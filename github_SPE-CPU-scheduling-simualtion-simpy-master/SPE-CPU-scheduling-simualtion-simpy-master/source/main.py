@@ -26,14 +26,14 @@ def write_statistic_to_file(file, job):
 class Job:
     def __init__(self, id, arrival_time, burst_time, priority):
         self.id = id
-        self.arrival_time = arrival_time
-        self.last_time_in_CPU = arrival_time
-        self.saved_burst_time = burst_time
-        self.burst_time = burst_time
-        self.priority = priority
-        self.turn_around_time = 0
-        self.waiting_time = 0
-        self.response_time = -1
+        self.arrival_time       = arrival_time
+        self.last_time_in_CPU   = arrival_time
+        self.saved_burst_time   = burst_time
+        self.burst_time         = burst_time
+        self.priority           = priority
+        self.turn_around_time   = 0
+        self.waiting_time       = 0
+        self.response_time      = -1
 
 
 class JobGenerator:

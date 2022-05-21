@@ -4,6 +4,7 @@ import networkx as nx
 import DAG_Set
 import matplotlib.pyplot as plt
 import copy
+import Core
 
 
 class Dispatcher_Workspace(object):
@@ -121,6 +122,7 @@ if __name__ == "__main__":
     log = []
     # items = [object() for _ in range(3)]
     items = [x for x in range(3)]
+    items = [Core.Core(Core_ID="1_1")]
     # Unorderable items are inserted with same priority.
     env.process((pstore.put(simpy.PriorityItem(item, item)) for item in items))
     env.process(getter(1))

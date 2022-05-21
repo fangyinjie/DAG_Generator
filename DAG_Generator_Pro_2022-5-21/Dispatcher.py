@@ -96,37 +96,15 @@ def setup(environment, Dag, core_num):
         # env.process(Client(env, 'Client_%d' % i, workstation))
 
 
-def getter(wait):
-    _, item = yield pstore.get()
-    yield env.timeout(wait)
-    log.append(item)
-    # env.process((pstore.put(simpy.PriorityItem(item, item))))
-    pstore.put(simpy.PriorityItem(item, item))
-
-
 if __name__ == "__main__":
-    """
     env = simpy.Environment()  # 创建一个环境并开始仿真
     # DAG = user_dag()
     DAG_Set = DAG_Set.DAG_Set()
     # ####### 1.手动DAG set ######## #
     # DAG_Set.user_defined_dag()
     # ####### 2.随机生成DAG set ##### #
-    DAG_Set.Random_DAG_Set(DAG_count=4, parallelism_list=[3, 4, 5, 6], critical_path_list=[3, 4, 5, 6])
+    # DAG_Set.Random_DAG_Set(DAG_count=4, parallelism_list=[3, 4, 5, 6], critical_path_list=[3, 4, 5, 6])
+    DAG_Set.Random_DAG_Set(DAG_count=1, parallelism_list=[3], critical_path_list=[3])
     env.process(setup(env, DAG_Set, core_num=2))  # 开始执行!
     env.run(until=10000000)
-    """
-    env = simpy.Environment()
-    pstore = simpy.PriorityStore(env, 3)
-    log = []
-    # items = [object() for _ in range(3)]
-    items = [x for x in range(3)]
-    # Unorderable items are inserted with same priority.
-    env.process((pstore.put(simpy.PriorityItem(item, item)) for item in items))
-    env.process(getter(1))
-    env.process(getter(2))
-    env.process(getter(3))
-    env.process(getter(4))
-    env.process(getter(5))
-    env.run()
-    print(log)
+
