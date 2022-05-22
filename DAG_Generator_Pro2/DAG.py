@@ -436,6 +436,7 @@ if __name__ == "__main__":
     G.Critical_path = 6     # int(Critical_path)    # 输入关键路径长度
     G.gen("mine")
     # G.user_defined_dag()
+    G.critical_path_config()
     G.graph_node_position_determine()   # DAG节点位置确定
 
     G.dag_param_critical_update()       # 关键数据分析

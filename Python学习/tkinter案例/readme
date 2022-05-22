@@ -1,0 +1,7 @@
+tkinker + python
+import tkinker as tk
+window = tk.Tk()            # 新建主窗口
+window.title('my window')   # 窗口标题
+window.geometry('200x100')  # 窗口尺寸大小
+widow.mainloop()            # 循环消息，开始工作
+控件可利用place代替pack固定位置

@@ -26,22 +26,18 @@ class DAG:
         # generator mine
         self.parallelism    = 0             # 并行度
         self.Critical_path  = 0             # 关键路径长度
-        self.Periodically   = 'APERIODIC'   # 'PERIODIC'：周期任务
-                                            # 'SPORADIC'：零星任务
-                                            # 'APERIODIC': 非周期任务，一次调用只运行一次，只运行一次
-        self.Real_Time      = 'HRT'         # 'HRT', 'SRT', 'FRT'
-        self.Cycle_Time     = 0             # 如果periodically是periodic则cycle_time为DAG的周期时间；
-                                            # 如果periodically是sporadic则cycle_time为DAG的最小间隔时间；
-                                            # 如果periodically是aperiodic则cycle_time为DAG；
+        # 'PERIODIC'：周期任务；'SPORADIC'：零星任务；'APERIODIC'：非周期任务(只运行一次)
+        self.Periodically   = 'APERIODIC'
+        # 'HRT'：硬实时, 'SRT'：软实时, 'FRT'：固实时
+        self.Real_Time      = 'HRT'
+        # 周期DAG的循环时间、零散DAG的最短时间间隔
+        self.Cycle_Time     = 0
         self.Deadline       = 0             # DAG的相对截止时间
-        self.Start_Time     = 0             # 默认为0 第一个DAG的到达时间
+        self.Start_Time     = 0             # 第一个DAG的到达时间（默认为0）
 
     #####################################
-    #   DAG 基本功能
+    #   Section_0: DAG 基本功能
     #####################################
-    # def get_graph(self):  # 返回G
-    #     return self.G
-
     #   获取 DAG 中处于就绪态的节点
     def get_ready_node_list(self):
         return [x for x in self.G.nodes(data=True) if (x[1].get('state') == 'ready')]
@@ -51,16 +47,27 @@ class DAG:
         return self.G.number_of_nodes()
 
     #####################################
-    #   DAG 随机生成函数
+    #   Section_1: DAG 随机生成函数
     #####################################
-    def gen(self, algorithm):  # 生成 DAG
-        if algorithm == "mine":
+    def DAG_Generator(self, DAG_Generator_algorithm):
+        if DAG_Generator_algorithm == "mine":
             self.gen_mine()
+        elif DAG_Generator_algorithm == "GNM":
+            self.gen_gnm(n=12, m=20)
+            pass
+        elif DAG_Generator_algorithm == "GNP":
+            self.gen_gnp(n=12, p=0.2)       # 将所有前驱为0的和source连接，后继为0的和sink连接
+        elif DAG_Generator_algorithm == "Layer_By_Layer":
+            pass
+        elif DAG_Generator_algorithm == "Fan_in_Fan_out":
+            pass
+        elif DAG_Generator_algorithm == "Random_Order":
+            pass
         else:
-            return 1
+            return False
         return 0
 
-    # ####  DAG generator mine 算法  #### #
+    # #### DAG generator mine 算法  #### #
     def gen_mine(self):
         assert (self.parallelism >= 1)
         assert (self.Critical_path >= 3)
@@ -103,11 +110,75 @@ class DAG:
         self.G.add_edges_from(lp)
         # print(np.array(nx.adjacency_matrix(self.G).todense()))
 
-    #####################################
+    # #### DAG generator GNP 算法  #### #
+    def gen_gnp(self, n, p):
+        Temp_Matrix = np.zeros((n, n), dtype=bool)
+        for x in range(1, n-1):
+            for y in range(x+1, n-1):
+                if random() < p:
+                    Temp_Matrix[x][y] = True
+        self.G = nx.from_numpy_matrix(np.array(Temp_Matrix), create_using=nx.DiGraph)
+        while True:
+            # self.G = nx.fast_gnp_random_graph(n=n, p=p, seed=None, directed=True)
+            for x in self.G.nodes(data=True):
+                x[1]['Node_ID']     = 'Job_{0}'.format(x[0])
+                x[1]['rank']        = 0
+                x[1]['critic']      = False
+                x[1]['WCET']        = 1
+                x[1]['priority']    = 1
+                x[1]['state']       = 'blocked'
+                # 无前驱节点的连接到0
+                if len(list(self.G.predecessors(x[0]))) == 0:
+                    if x[0] != 0:
+                        self.G.add_edge(0, x[0])
+                # 无前后继点的连接到n-1
+                if len(list(self.G.successors(x[0]))) == 0:
+                    if x[0] != n-1:
+                        self.G.add_edge(x[0], n-1)
+            if nx.is_directed_acyclic_graph(self.G):
+                break
+            else:
+                print("GNP Failed")
+
+    # #### DAG generator GNM 算法  #### #
+    def gen_gnm(self, n, m):
+        assert n * (n - 1) >= m >= n - 1
+        All_edges_list = []
+        for x in range(n):
+            for y in range(x + 1, n):
+                All_edges_list.append((x, y))
+        Temp_edges_list = rand.sample(All_edges_list, m)
+        self.G.add_edges_from(Temp_edges_list)
+        for x in self.G.nodes(data=True):
+            x[1]['Node_ID']     = 'Job_{0}'.format(x[0])
+            x[1]['rank']        = 0
+            x[1]['critic']      = False
+            x[1]['WCET']        = 1
+            x[1]['priority']    = 1
+            x[1]['state']       = 'blocked'
+            if (len(list(self.G.predecessors(x[0]))) == 0) and (x[0] != 0):
+                self.G.add_edge(0, x[0])
+            if (len(list(self.G.successors(x[0]))) == 0) and (x[0] != n-1):
+                self.G.add_edge(x[0], n-1)
+        assert nx.is_directed_acyclic_graph(self.G)
+
+    # #### DAG generator Layer_By_Layer 算法  #### #
+    def gen_layer_by_layer(self, n, m):
+        pass
+
+    # #### DAG generator Fan_in_Fan_out 算法  #### #
+    def gen_fan_in_fan_out(self, n, m):
+        pass
+
+    # #### DAG generator Random_Order 算法  #### #
+    def gen_random_order(self, n, m):
+        pass
+
+    # ######################################################################
     #   Transitive reduction函数
     #   param:      matrix: Adjacency Matrix
     #   return:     A matrix that has been reduced in transitive
-    #####################################
+    # ######################################################################
     def transitive_reduction_matrix(self):
         matrix = np.array(nx.adjacency_matrix(self.G).todense())
         row, columns = matrix.shape
@@ -135,58 +206,83 @@ class DAG:
         # print('关键路径：{0}'.format(node_list))
 
     #####################################
-    #   Show DAG
-    #####################################
-    def show_dag(self):
-        print("DAG_ID:", self.DAG_ID)                       # 1.打印DAG的ID
-        print("DAG_Nodes_num:", self.G.number_of_nodes())   # 2.打印节点数量
-        print("DAG_Edges_num:", self.G.number_of_edges())   # 打印边的数量
-
-    def node_property(self, node_number):
-        # for node_x in self.G.nodes(data=True):
-        node_x = self.G.node[node_number]
-        assert (node_number == node_x[0])
-        print("node_id", node_x[0], node_number)
-        print("node_Node_ID", node_x[1].get('Node_ID'))
-        print("node_rank", node_x[1].get('rank'))
-        print("node_critic", node_x[1].get('critic'))
-        # self.G.node[0]['critic'] == True
-
-    def print_data(self):
-        # print(self.G.graph)
-        # print(self.G.nodes(data=True))  # 输出所有可能的DAG结果数量；
-        print(self.G.nodes.data(data=True))
-        print(self.G.edges.data(data=True))
-
-    #####################################
-    #   获取DAG的并行度和关键路径长度
-    #   DAG generator 算法4#
+    #   获取DAG的关键参数分析
     #####################################
     def dag_param_critical_update(self):
-        # # # # # （1）配置关键路径 # # # # #
+        # #### 0.DAG检测及基本参数 #### #
+        assert format(nx.is_directed_acyclic_graph(self.G))      # 检测是否是有向无环图
+        print("DAG_ID:", self.DAG_ID)  # 1.打印DAG的ID
+        print('DAG中的节点数量：{0}'.format(self.G.number_of_nodes()))
+        print('DAG中的边的数量：{0}'.format(self.G.number_of_edges()))
+
+        #####################################
+        #   获取DAG的结构相关参数
+        #####################################
+        # #### 1.关键路径 #### #
         node_list = nx.dag_longest_path(self.G, weight='weight')  # 关键路径
         print('关键路径：{0}'.format(node_list))
-        # # # # # （1.2）配置最短路径 # # # # #
+
+        # #### 2.最短路径 #### #
         shortest_path = list(nx.all_shortest_paths(self.G, 0, self.G.number_of_nodes() - 1, weight='weight'))
         print('DAG的最短路径{0}条：'.format(len(shortest_path)))
-        for path in shortest_path:
-            print(path)
-        # # # # # （3）获取拓扑分层 shape # # # # #
-        # # # # # （3.1）正向shape # # # # #
+        [print(path) for path in shortest_path]
+
+        # #### 3.获取拓扑分层 shape #### #
+        # 3.1 正向shape
         rank_list = [sorted(generation) for generation in nx.topological_generations(self.G)]
+        rank_num_list = [len(x) for x in rank_list]
         print('拓扑分层：{0}'.format(rank_list))
-        print('节点的拓扑排序:{}'.format(list(nx.topological_sort(self.G))))
-        print('边的拓扑排序:{}'.format(list(nx.topological_sort(nx.line_graph(self.G)))))
-        # # # # # （3.2）反向shape # # # # #
+        print('拓扑分层节点数量分布：{0}'.format(rank_num_list))
+        print("最大shape:{0}、最小shape:{1}、平均shape:{2:2f}、shape标准差:{3:2f}".format(
+            max(rank_num_list), min(rank_num_list), np.mean(rank_num_list), np.std(rank_num_list)))
+        # 3.2 反向shape
         re_rank_list = [sorted(generation) for generation in nx.topological_generations(nx.DiGraph.reverse(self.G))]
         re_rank_list.reverse()
+        re_rank_num_list = [len(x) for x in re_rank_list]
         print('反向拓扑分层：{0}'.format(re_rank_list))
-        app = []
-        for rank_x in rank_list:
-            app.append(len(rank_x))
-        self.parallelism = max(app)
-        # # # # # （4）antichains # # # # #
-        print("antichains", list(nx.antichains(self.G, topo_order=None)))    # 从DAG中生成antichains；
+        print('反向拓扑分层节点数量分布：{0}'.format(re_rank_num_list))
+        print("最大re_shape:{0}、最小re_shape:{1}、平均re_shape:{2:2f}、re_shape标准差:{3:2f}".format(
+            max(re_rank_num_list), min(re_rank_num_list), np.mean(re_rank_num_list), np.std(re_rank_num_list)))
+
+        # #### 4.DAG并行度数据更新 #### #
+        self.parallelism = max([len(rank_x) for rank_x in rank_list])
+        print('DAG的并行度：{0}'.format(self.parallelism))
+
+        # #### 5.antichains #### #
+        print("anti-chains", list(nx.antichains(self.G, topo_order=None)))  # 从DAG中生成antichains；
+
+        # #### 6.degree #### #
+        degree_list = [nx.degree(self.G, self_node[0]) for self_node in self.G.nodes(data=True)]
+        degree_in_list = [self.G.in_degree(self_node[0]) for self_node in self.G.nodes(data=True)]
+        degree_out_list = [self.G.out_degree(self_node[0]) for self_node in self.G.nodes(data=True)]
+        print("最大度:{0}、最小度:{1}、平均度{2:2f}、度标准差{3:2f}".format(
+            max(degree_list), min(degree_list), np.mean(degree_list), np.std(degree_list)))
+        print("最大入度:{0}、最小入度:{1}、平均入度{2:2f}、入度标准差{3:2f}".format(
+            max(degree_in_list), min(degree_in_list), np.mean(degree_in_list), np.std(degree_in_list)))
+        print("最大出度:{0}、最小出度:{1}、平均出度{2:2f}、出度标准差{3:2f}".format(
+            max(degree_out_list), min(degree_out_list), np.mean(degree_out_list), np.std(degree_out_list)))
+
+        # #### 7.DAG的稠密度 Density  #### #
+        Dag_density = (2 * self.G.number_of_edges()) / (self.G.number_of_nodes() * (self.G.number_of_nodes()-1))
+        print("稠密度：{0:2f}".format(Dag_density))
+
+        #####################################
+        #   获取DAG的时间相关参数
+        #####################################
+        # #### 1.DAG最差执行时间list  #### #
+        WCET_list = [x[1]['WCET'] for x in self.G.nodes.data(data=True)]
+        print("WCET_list：{0}".format(WCET_list))
+        print("WCET的顺序执行时间：{0}, WCET的均值：{1:2f}, WCET的标准差：{2:2f}".format(
+            np.sum(WCET_list), np.mean(WCET_list), np.std(WCET_list)))
+
+    def dag_param_critical_update_other(self):
+        print('节点的拓扑排序:{}'.format(list(nx.topological_sort(self.G))))
+        print('边的拓扑排序:{}'.format(list(nx.topological_sort(nx.line_graph(self.G)))))
+        """搜索最低共同祖先（DAGs）的算法."""
+        # lcas: 元组((u, v), lca)的生成器，其中'u'和'v'是对儿中节点，lca是他们的最低共同祖先，但要求必须需是树！！！
+        print("all_pairs_lowest_common_ancestor:")
+        for x in list(nx.all_pairs_lowest_common_ancestor(self.G)):
+            print(x)
         """Find the k-cores of a graph."""
         print("每个vertex的core数:", nx.core_number(self.G))                   # Returns the core number for each vertex.
         # k-core是包含k度(degree k)或k度(degree k)以上节点的最大子图。
@@ -200,14 +296,8 @@ class DAG:
         """Routines to find the boundary of a set of nodes."""
         print("edge_boundary:", list(nx.edge_boundary(self.G, [1])))
         print("node_boundary:", list(nx.node_boundary(self.G, [1])))
-        """Dominance algorithms."""
-        print("直接支配节点:", nx.immediate_dominators(self.G, 0))     # 返回有向图中所有节点的直接支配节点。
-        print("直接支配边界:", nx.dominance_frontiers(self.G, 0))      # 返回有向图中所有节点的支配边界。
         """Flow Hierarchy."""   # 返回有向网络的流层次结构(恒为1.0不知道为什么？)。
         # print("flow_hierarchy:", nx.flow_hierarchy(self.G, weight='weight'))
-        """搜索最低共同祖先（DAGs）的算法."""
-        # lcas: 元组((u, v), lca)的生成器，其中'u'和'v'是对儿中节点，lca是他们的最低共同祖先，但要求必须需是树！！！
-        print("all_pairs_lowest_common_ancestor:", list(nx.all_pairs_lowest_common_ancestor(self.G)))
         """用于计算和验证规则图(regular graphs)的功能 """
         # 定义（regular graph）：图中每个节点都有相同的度。regular有向图是指每个顶点的入度和出度相等的图。
         print("图是否是规则图:", nx.is_regular(self.G))   # 判断图G是否是规则图.
@@ -238,78 +328,84 @@ class DAG:
         print("dfs_postorder_nodes:\n", list(nx.dfs_postorder_nodes(self.G, source=0)))  # 从source开始，以深度优先搜索后排序的方式生成节点。
         print("dfs_labeled_edges:\n", list(nx.dfs_labeled_edges(self.G, source=0)))      # 在按类型标记的深度优先搜索(DFS)中迭代边。
         """用于识别孤立(零度)节点的函数"""
-        print("isolates:\n", list(nx.isolates(self.G)))                    # 判断是否有孤立节点，图中孤立节点的迭代器
-        print("number_of_isolates:\n", nx.number_of_isolates(self.G))      # 返回图中鼓励节点的数量
-        # 3.node_num节点的前驱、后继、祖先、后代
-        for self_node in self.G.nodes(data=True):
-            print('node_num=:{0}'.format(self_node))
-            print('\t前驱节点（predecessors）：{0}'.format(list(self.G.predecessors(self_node[0]))))
-            print('\t祖先节点（ancestors）：{0}'.format(nx.ancestors(self.G, self_node[0])))
-            print('\t后继节点（successors）：{0}'.format(list(self.G.successors(self_node[0]))))
-            print('\t后代节点（descendants）：{0}'.format(nx.descendants(self.G, self_node[0])))
-            print('\t节点的邻居（neighbors）：{0}'.format(list(nx.neighbors(self.G, self_node[0]))))  # 就是后继节点 successors
-            print('\t节点的度（degree）：{0}'.format(nx.degree(self.G, self_node[0])))  # node 0 with degree 1
-            print('\t节点的入度（in_degree）：{0}'.format(self.G.in_degree(self_node[0])))
+        print("isolates:\n", list(nx.isolates(self.G)))  # 判断是否有孤立节点，图中孤立节点的迭代器
+        print("number_of_isolates:\n", nx.number_of_isolates(self.G))  # 返回图中鼓励节点的数量
+        # #### 6.Dominance algorithms #### #
+        print("直接支配节点:", nx.immediate_dominators(self.G, 0))  # 返回有向图中所有节点的直接支配节点。
+        print("直接支配边界:", nx.dominance_frontiers(self.G, 0))  # 返回有向图中所有节点的支配边界。
 
         # pp1 = nx.dag_to_branching(self.G)
         # sources = defaultdict(set)
         # for v, source in pp1.nodes(data="source"):
         #     sources[source].add(v)
         # print("sources", sources)
-
         # """Algorithms to calculate reciprocity in a directed graph."""
         # print("reciprocity:", nx.reciprocity(self.G))  # 计算有向图中的互反性（reciprocity）,DAG不允许自反！！！。
         # print("overall_reciprocity:", nx.overall_reciprocity(self.G))  #计算全图的自反性
 
+    def node_property(self, node_number):
+        # for node_x in self.G.nodes(data=True):
+        node_x = self.G.node[node_number]
+        assert (node_number == node_x[0])
+        print("node_id", node_x[0], node_number)
+        print("node_Node_ID", node_x[1].get('Node_ID'))
+        print("node_rank", node_x[1].get('rank'))
+        print("node_critic", node_x[1].get('critic'))
+        # self.G.node[0]['critic'] == True
+
+    def print_data(self):
+        # print(self.G.nodes.data(data=False))
+        # print(self.G.edges.data(data=False))
+        print(self.G.nodes.data(data=True))
+        print(self.G.edges.data(data=True))
+
     #########################################
     #   DAG graph_node_position_determine
-    #   参数：
-    #       G：一个DAG；
-    #   注：更新self.pos,方便作图
-    #       pos = nx.spring_layout(G.get_graph())               #- spring_layout：    用Fruchterman - Reingold算法排列节点
-    #       pos = nx.random_layout(G.get_graph())               #- random_layout：    节点随机分布
-    #       pos = nx.circular_layout(G.get_graph())             #- circular_layout：  节点在一个圆环上均匀分布
-    #       pos = nx.shell_layout(G.get_graph())                #- shell_layout：     节点在同心圆上分布
-    #       pos = nx.spectral_layout(G.get_graph(), scale=15)   #- spectral_layout：  根据图的拉普拉斯特征向量排列节
     #########################################
     def graph_node_position_determine(self):
-        color_map       = []
         n_pos           = {}
         n_map           = {}
-        c_dicy          = {}
         rank_list = [sorted(generation) for generation in nx.topological_generations(self.G)]
         for z1 in range(0, len(rank_list)):
             for z2 in range(0, len(rank_list[z1])):
                 node_ID = rank_list[z1][z2]
                 sub_node = self.G.nodes[node_ID]
                 n_pos[node_ID] = [(z1 + 0.5) * 120 / len(rank_list), (z2 + 0.5) * 120 / len(rank_list[z1])]
-                n_map[node_ID] = "ID:{0} \n WCET:{1} \n prio:{2}".format(
-                    sub_node.get('Node_ID'), sub_node.get('WCET'), sub_node.get('priority'))
-                if sub_node['critic']:
-                    color = 'green'
-                else:
-                    color = '#1f78b4'
-                c_dicy[node_ID] = color
-        c_dicy = dict(sorted(c_dicy.items(), key=lambda x: x[0]))
-        color_map = [x for x in c_dicy.values()]
-        nx.draw_networkx_nodes(self.G, n_pos, node_color=color_map, node_size=800, node_shape='o')    # 绘制节点
-        nx.draw_networkx_edges(self.G, n_pos)                                                         # 绘制边
-        nx.draw_networkx_labels(self.G, n_pos, labels=n_map, font_size=5, font_color='k')             # 标签
+                n_map[node_ID] = "ID:{0} \n WCET:{1} \n prio:{2} \n Cri:{3}".format(
+                    sub_node.get('Node_ID'), sub_node.get('WCET'), sub_node.get('priority'), sub_node.get('critic'))
+        nx.draw(self.G, n_pos, node_size=800, with_labels=True, labels=n_map, font_size=5, font_color='k')
 
     #####################################
-    #   WCET 配置算法与分析#
+    #   WCET 配置算法#
+    #   参数a： 均匀分布的最小值、高斯分布的均值
+    #   参数b： 均匀分布的最大值、高斯分布的方差
     #####################################
-    def WCET_Config(self, WCET_Config_type):
+    def WCET_Config(self, WCET_Config_type, a, b):
+        # 方式1（均匀分布）：在区间[a, b]中均匀分布方式生成 WCET
         if WCET_Config_type == "random":
-            self.wcet_random_config()
+            for x in self.G.nodes(data=True):
+                x[1]['WCET'] = math.ceil(np.random.uniform(a, b))
+                # x[1]['WCET'] = rand.randint(a, b)
+            # [x for x in self.G.nodes(data=True) if (x[1].get('state') == 'ready')]
+
+        # 方式2（正态分布）：以loc=a为均值，以scale=b为方差 # size:输出形式 / 维度
+        elif WCET_Config_type == "normal":
+            for x in self.G.nodes(data=True):
+                while True:
+                    x[1]['WCET'] = math.ceil(np.random.normal(loc=a, scale=b, size=None))
+                    if x[1]['WCET'] > 0:
+                        break
+
+        # 方式3（高斯分布，gauss）以均值为mu=a，标准偏差为sigma=b的方式生成 WCET
+        elif WCET_Config_type == "gauss":
+            for x in self.G.nodes(data=True):
+                while True:
+                    x[1]['WCET'] = math.ceil(rand.gauss(a, b))
+                    if x[1]['WCET'] > 0:
+                        break
         else:
             pass
 
-
-    def wcet_random_config(self):
-        for x in self.G.nodes(data=True):
-            x[1]['WCET'] = rand.randint(100, 1000)
-            # [x for x in self.G.nodes(data=True) if (x[1].get('state') == 'ready')]
 
     #####################################
     #   优先级 配置算法#
@@ -367,7 +463,6 @@ class DAG:
         paths = list(nx.all_simple_paths(self.G, node_list[0], node_list[-1]))
 
         interference_node_list = []
-        # ret_path_and_rta = []
         ret_path_and_rta = [0, 0, 0, [], []]
         for x in paths:
             temp_interference_node_list = []
@@ -450,33 +545,34 @@ if __name__ == "__main__":
     # print("你输入的内容是: ", Parallelism)
     # Critical_path = input("请输入DAG的关键路径长度：")
     # print("你输入的内容是: ", Critical_path)
-    # plt.figure()            # (figsize=(100.0, 100.0))
-    plt.subplot(211)
+    plt.figure()            # (figsize=(100.0, 100.0))
+    # plt.subplot(211)
     G = DAG()               # 初始化DAG
-    G.parallelism   = 4     # int(Parallelism)      # 输入并行度
-    G.Critical_path = 6     # int(Critical_path)    # 输入关键路径长度
-    G.gen("mine")
+    # （1）手动生成DAG
     # G.user_defined_dag()
-    G.graph_node_position_determine()   # DAG节点位置确定
+    # （2）随机生成DAG
+    G.DAG_ID = "DAG_{0}".format("4_6")  # 配置DAG的ID
+    G.Priority = 1                      # 配置DAG的优先级
+    G.parallelism   = 4                 # 输入并行度 int(Parallelism)
+    G.Critical_path = 6                 # 输入关键路径长度 int(Critical_path)
+    # step1.DAG结构生成
+    # G.DAG_Generator("mine")
+    # G.DAG_Generator("GNP")
+    G.DAG_Generator("GNM")
+    # step2. DAG WCET配置；
+    G.WCET_Config("gauss", 10, 100)  # gauss # random # normal
+    # step3. DAG 优先级配置；
+    G.Priority_Config("random")
+    # step4. DAG 关键路径配置；
+    G.critical_path_config()
+    # step5. DAG节点位置确定
+    G.graph_node_position_determine()
 
+    # #### DAG 关键数据分析；#### #
+    G.print_data()
     G.dag_param_critical_update()       # 关键数据分析
-
-    # plt.title('DAG generator' +
-    #           '\n Is a DAG:{0}'.format(nx.is_directed_acyclic_graph(G.get_graph())) +  # 检测是否是有向无环图
-    #           '\n number of nodes for DAG:{0}'.format(G.G.number_of_nodes()) +  # 返回G的节点数量
-    #           '\n number of edges for DAG:{0}'.format(G.G.number_of_edges()) +  # 返回G的边数量
-    #           '',
-    #           fontsize=10, color="black", weight="light", ha='left', x=0)  # style="italic",
 
     plt.xlabel('crirical={}'.format(G.Critical_path))
     plt.ylabel('param={}'.format(G.parallelism))
     plt.show()
     # G.save(basefolder="data/")
-
-    # 传递闭包***
-    # 有向图的 transitive closure；
-    # nx.transitive_closure(G, reflexive=False)
-    # 如果有向无环形图的transitive closure；
-    # nx.transitive_closure_dag(G.get_graph(), topo_order=None)
-    # print('1', np.array(nx.adjacency_matrix(G.get_graph()).todense()))
-    # print('2', np.array(nx.adjacency_matrix(G1).todense()))

@@ -1,0 +1,111 @@
+
+2. 建立网络
+3. 绘制网络 nx.draw()
+4. 建立布局 pos = nx.spring_layout美化作用
+最基本画图程序
+
+1. 导入networkx，matplotlib包
+    import networkx as nx                               # 导入networkx包
+    import matplotlib.pyplot as plt
+    G = nx.random_graphs.barabasi_albert_graph(100,1)   # 生成一个BA无标度网络G
+    nx.draw(G)                                          # 绘制网络G
+    # 输出方式1: 将图像存为一个png格式的图片文件
+    plt.savefig("ba.png")
+    # 输出方式2: 在窗口中显示这幅图像
+    plt.show()
+
+networkx 提供画图的函数有：
+
+draw（G，[pos,ax,hold]）
+draw_networkx(G，[pos,with_labels])
+draw_networkx_nodes(G,pos,[nodelist])       # 绘制网络G的节点图
+draw_networkx_edges(G,pos[edgelist])        # 绘制网络G的边图
+draw_networkx_edge_labels(G, pos[, ...])    # 绘制网络G的边图，边有label
+
+---有layout 布局画图函数的分界线---
+
+draw_circular(G, **kwargs)                  # Draw the graph G with a circular layout.
+draw_random(G, **kwargs)                    # Draw the graph G with a random layout.
+draw_spectral(G, **kwargs)                  # Draw the graph G with a spectral layout.
+draw_spring(G, **kwargs)                    # Draw the graph G with a spring layout.
+draw_shell(G, **kwargs)                     # Draw networkx graph with shell layout.
+draw_graphviz(G[, prog])                    # Draw networkx graph with graphviz layout.
+
+networkx 画图参数：
+- node_size:    指定节点的尺寸大小(默认是300，单位未知，就是上图中那么大的点)
+- node_color:   指定节点的颜色 (默认是红色，可以用字符串简单标识颜色，例如'r'为红色，'b'为绿色等，具体可查看手册)，用“数据字典”赋值的时候必须对字典取值（.values()）后再赋值
+- node_shape:   节点的形状（默认是圆形，用字符串'o'标识，具体可查看手册）
+- alpha:        透明度 (默认是1.0，不透明，0为完全透明)
+- width:        边的宽度 (默认为1.0)
+- edge_color:   边的颜色(默认为黑色)
+- style:        边的样式(默认为实现，可选： solid|dashed|dotted,dashdot)
+- with_labels:  节点是否带标签（默认为True）
+- font_size:    节点标签字体大小 (默认为12)
+- font_color:   节点标签字体颜色（默认为黑色）
+e.g. nx.draw(G,node_size = 30, with_label = False)  # 绘制节点的尺寸为30，不带标签的网络图。
+
+布局指定节点排列形式
+建立布局，对图进行布局美化，networkx 提供的布局方式有：
+- circular_layout：  节点在一个圆环上均匀分布
+- random_layout：    节点随机分布
+- shell_layout：     节点在同心圆上分布
+- spring_layout：    用Fruchterman-Reingold算法排列节点
+- spectral_layout：  根据图的拉普拉斯特征向量排列节
+e.g. pos = nx.spring_layout
+
+布局也可用pos参数指定，例如，nx.draw(G, pos = spring_layout(G)) 这样指定了networkx上以中心放射状分布.
+    partition   = community.best_partition(User)
+    size        = float(len(set(partition.values())))
+    pos         = nx.spring_layout(G)
+    count       = 0.
+    # set() 函数创建一个无序不重复元素集，可进行关系测试，删除重复数据，还可以计算交集、差集、并集等。
+    for com in set(partition.values()) :
+        count       = count + 1.
+        list_nodes  = [nodes for nodes in partition.keys() if partition[nodes] == com]
+        nx.draw_networkx_nodes(G, pos, list_nodes, node_size = 50, node_color = str(count / size))
+    nx.draw_networkx_edges(User, pos, with_labels = True, alpha=0.5 )
+    plt.show()
+communit.best_partition 是社区划分方法，算法是根据Vincent D.Blondel 等人于2008提出，
+是基于modularity optimization的heuristic方法.
+partition的结果存在字典数据类型：
+{'1': 0, '3': 1, '2': 0, '5': 1, '4': 0, '6': 0}
+单引号里的数据是key，也就是网络中节点编号。
+冒号后面的数值，表示网络中节点的编号属于哪个社区。也就是社区标号。如'6': 0表示6节点属于0社区
+    markers = {'.': 'point',
+               ',': 'pixel',
+               'o': 'circle',
+               'v': 'triangle_down',
+               '^': 'triangle_up',
+               '<': 'triangle_left',
+               '>': 'triangle_right',
+               '1': 'tri_down',
+               '2': 'tri_up',
+               '3': 'tri_left',
+               '4': 'tri_right',
+               '8': 'octagon',
+               's': 'square',
+               'p': 'pentagon',
+               '*': 'star',
+               'h': 'hexagon1',
+               'H': 'hexagon2',
+               '+': 'plus',
+               'x': 'x',
+               'D': 'diamond',
+               'd': 'thin_diamond',
+               '|': 'vline',
+               '_': 'hline',
+               'P': 'plus_filled',
+               'X': 'x_filled',
+               0: 'tickleft',
+               1: 'tickright',
+               2: 'tickup',
+               3: 'tickdown',
+               4: 'caretleft',
+               5: 'caretright',
+               6: 'caretup',
+               7: 'caretdown',
+               8: 'caretleftbase',
+               9: 'caretrightbase',
+               10: 'caretupbase',
+               11: 'caretdownbase',
+               'None': 'nothing', None: 'nothing', ' ': 'nothing','': 'nothing'}

@@ -1,0 +1,20 @@
+（1）         urllib
+             urllib2     网络
+（2）         datetime    time时间
+（3）         OS          系统
+（4）         pickle      对象序列化   常用数据交换格式. isom xml
+（5）         bsddb       数据库     key=》value
+（6）         loging      日志（为系统做日志）
+（7）
+fileObject.read()           从文件读取指定的字节数，如果未给定或为负则读所有
+
+OS.listdir()                用于返回指定的文件夹包含的文件/文件夹的名的list
+os.path.join("xx","xx","xx")    返回  xxx/xxx/xxx 自动添加分隔符
+
+import numpy as np
+array函数
+array.astype('xxx eg float32')  # 把矩阵中的数据改为float32类型
+sum()       求和
+max()       求最大值
+min()       求最小值
+mean()      求平均值

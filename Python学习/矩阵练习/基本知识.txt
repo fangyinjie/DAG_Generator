@@ -1,0 +1,17 @@
+元组      (数据对象, xxx, ……)         不可变对象
+列表      [xxx, xxx, ……]              可变对象
+e[x x]
+e.append(x)                         在e的尾部加x
+ascII   ——》 utf-8                   a="xxx"
+g=a.decode('utf-8')                 转换
+Join([x, x, x])                     字符串连接
+打开文件：           open('x.txt', 'w')  写
+打开文件：           open('x.txt', 'r')  读
+打开文件：           open('x.txt', 'a')  尾行添加
+
+修改字符串        a = "this is word"
+                b = a.replace("this", "that")       //this改成that
+                a没变、b为结果
+                a.find("world")                     输出首字母位置的数字
+
+

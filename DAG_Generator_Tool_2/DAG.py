@@ -298,7 +298,7 @@ class DAG:
         c_dicy = dict(sorted(c_dicy.items(), key=lambda x: x[0]))
         color_map = [x for x in c_dicy.values()]
         nx.draw_networkx_nodes(self.G, n_pos, node_color=color_map, node_size=800, node_shape='o')    # 绘制节点
-        nx.draw_networkx_edges(self.G, n_pos, arrows=True,arrowstyle='-|>',  arrowsize=20)                                     # 绘制边
+        nx.draw_networkx_edges(self.G, n_pos, arrows=True, arrowstyle='-|>',  arrowsize=20)                                     # 绘制边
         nx.draw_networkx_labels(self.G, n_pos, labels=n_map, font_size=5, font_color='k')             # 标签
 
     #####################################
@@ -348,22 +348,22 @@ class DAG:
     #####################################
     #   自定义 DAG 算法#
     #####################################
-    def user_defined_dag(self):
-        self.parallelism = 4
-        self.Critical_path = 4
-
-        # test vector
-        G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
-        C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
-        # prio = {1:9,2:8,3:7,4:6,5:5,6:4,7:3,8:2,9:1}
-        prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
-        for node_x in HE_2019_nodes:
-            self.G.add_node(node_x[0], Node_ID=node_x[1], rank=0, critic=False, WCET=node_x[2], priority=node_x[3])
-        edges = [(1, 2), (1, 3), (1, 4), (1, 5), (1, 6),
-                 (5, 7), (6, 7),
-                 (2, 8), (3, 8), (4, 8), (7, 8) ]
-        for edge in edges:
-            self.G.add_edge(edge[0], edge[1], weight=1)
+    # def user_defined_dag(self):
+    #     self.parallelism = 4
+    #     self.Critical_path = 4
+    #
+    #     # test vector
+    #     G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
+    #     C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
+    #     # prio = {1:9,2:8,3:7,4:6,5:5,6:4,7:3,8:2,9:1}
+    #     prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
+    #     for node_x in HE_2019_nodes:
+    #         self.G.add_node(node_x[0], Node_ID=node_x[1], rank=0, critic=False, WCET=node_x[2], priority=node_x[3])
+    #     edges = [(1, 2), (1, 3), (1, 4), (1, 5), (1, 6),
+    #              (5, 7), (6, 7),
+    #              (2, 8), (3, 8), (4, 8), (7, 8) ]
+    #     for edge in edges:
+    #         self.G.add_edge(edge[0], edge[1], weight=1)
 
     def user_defined_dag2(self):
         # 节点号； 节点名； 节点优权重； 节点优先级
