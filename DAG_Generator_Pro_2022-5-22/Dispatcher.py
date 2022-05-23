@@ -1,24 +1,43 @@
-import random
 import simpy
-import networkx as nx
 import DAG_Set
 import matplotlib.pyplot as plt
 import copy
-# import Core
+import Core
+# import random
+# import networkx as nx
 
 
 class Dispatcher_Workspace(object):
     """ 一个处理器（Processor），拥有特定数量的资源（core，内存，缓存等）。
     一个客户首先申请服务。在对应服务时间完成后结束并离开工作站 """
 
-    def __init__(self, env, Dag_Set, core_num):
-        self.env = env  # simpy实体
-        self.Dag_Set = Dag_Set
-        self.core_num = core_num
-        self.core_Set = simpy.Resource(env, core_num)  # 类给env配资源
+    def __init__(self, run_env, Dag_Set, core_num):
+        self.env        = run_env  # simpy实体
+        self.Dag_Set    = Dag_Set
+        self.core_num   = core_num
+        # self.core_Set   = simpy.Resource(self.env, core_num)  # 类给env配资源
+        self.core_Set   = simpy.PriorityStore(self.env, core_num)
+        items = [Core.Core(Core_ID="".format(x)) for x in range(3)]
+        self.env.process((self.core_Set.put(simpy.PriorityItem(item, item)) for item in items))
         self.Dag_Set.Status_Dataup()  # 更新节点状态，所有前驱为0的节点进入就绪态
         self.makespan_dict = {}
         self.Temp_DAG_Set = copy.deepcopy(self.Dag_Set)
+
+    # env = simpy.Environment()
+    # pstore = simpy.PriorityStore(env, 3)
+    # log = []
+    # #
+    # items = [x for x in range(3)]
+    # items = [Core.Core(Core_ID="1_1")]
+    # # Unorderable items are inserted with same priority.
+    # env.process((pstore.put(simpy.PriorityItem(item, item)) for item in items))
+    # env.process(getter(1))
+    # env.process(getter(2))
+    # env.process(getter(3))
+    # env.process(getter(4))
+    # env.process(getter(5))
+    # env.run()
+    # print(log)
 
     # 每个core的运作，系统中有几个core就有几个Core_act进程
     def Core_act(self, environment, core_ID):
@@ -29,7 +48,7 @@ class Dispatcher_Workspace(object):
                 # 获取优先级最高的DAG以及此DAG中进入就绪状态的node list
                 DAG_ID, ready_high_node = self.Temp_DAG_Set.get_priorituy_ready_node()
                 if not ready_high_node:
-                    yield env.timeout(1)
+                    yield environment.timeout(1)
                     continue
                 # step2.将此list中优先级最高的节点上处理器，状态进入运行态；并记录开始时间
                 start_time = environment.now
@@ -106,29 +125,13 @@ def setup(environment, Dag, core_num):
 
 
 if __name__ == "__main__":
-    """
-    env = simpy.Environment()  # 创建一个环境并开始仿真
-    # DAG = user_dag()
+
+    env = simpy.Environment()       # 创建一个环境并开始仿真
     DAG_Set = DAG_Set.DAG_Set()
     # ####### 1.手动DAG set ######## #
     # DAG_Set.user_defined_dag()
     # ####### 2.随机生成DAG set ##### #
-    DAG_Set.Random_DAG_Set(DAG_count=4, parallelism_list=[3, 4, 5, 6], critical_path_list=[3, 4, 5, 6])
+    DAG_Set.Random_DAG_Set(DAG_count=4, parallelism_list=[3, 3, 3, 3], critical_path_list=[3, 3, 3, 3])
     env.process(setup(env, DAG_Set, core_num=2))  # 开始执行!
     env.run(until=10000000)
-    """
-    # env = simpy.Environment()
-    # pstore = simpy.PriorityStore(env, 3)
-    # log = []
-    # # items = [object() for _ in range(3)]
-    # items = [x for x in range(3)]
-    # items = [Core.Core(Core_ID="1_1")]
-    # # Unorderable items are inserted with same priority.
-    # env.process((pstore.put(simpy.PriorityItem(item, item)) for item in items))
-    # env.process(getter(1))
-    # env.process(getter(2))
-    # env.process(getter(3))
-    # env.process(getter(4))
-    # env.process(getter(5))
-    # env.run()
-    # print(log)
+
