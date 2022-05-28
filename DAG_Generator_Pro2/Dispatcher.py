@@ -11,10 +11,10 @@ class Dispatcher_Workspace(object):
     一个客户首先申请服务。在对应服务时间完成后结束并离开工作站 """
 
     def __init__(self, env, Dag_Set, core_num):
-        self.env = env  # simpy实体
-        self.Dag_Set = Dag_Set
-        self.core_num = core_num
-        self.core_Set = simpy.Resource(env, core_num)  # 类给env配资源
+        self.env        = env  # simpy实体
+        self.Dag_Set    = Dag_Set
+        self.core_num   = core_num
+        self.core_Set   = simpy.Resource(env, core_num)  # 类给env配资源
         self.Dag_Set.Status_Dataup()  # 更新节点状态，所有前驱为0的节点进入就绪态
         self.makespan_dict = {}
         self.Temp_DAG_Set = copy.deepcopy(self.Dag_Set)
@@ -73,12 +73,13 @@ class Dispatcher_Workspace(object):
                       fontsize=5, color="black", weight="light", ha='left', x=0)
         plt.subplot(212)
         core_channel = 0
+        fontsize = 4
         for k, v in self.makespan_dict.items():
             for x in v:
                 plt.barh(y=core_channel * 3, width=x[3] - x[2], height=2, left=x[2], color='grey', edgecolor='black')
-                plt.text(x=x[3], y=core_channel * 3 + 1, s=x[3], fontsize=2)
-                plt.text(x=x[2] + (x[3] - x[2]) / 2, y=core_channel * 3, s='{0}\n{1}\n{2}'.format(x[0], x[1], x[3]-x[2]), fontsize=2)
-                plt.text(x=x[2], y=core_channel * 3 - 1, s=x[2], fontsize=2)
+                plt.text(x=x[3], y=core_channel * 3 + 1, s=x[3], fontsize=fontsize)
+                plt.text(x=x[2] + (x[3] - x[2]) / 2, y=core_channel * 3, s='{0}\n{1}\n{2}'.format(x[0], x[1], x[3]-x[2]), fontsize=fontsize)
+                plt.text(x=x[2], y=core_channel * 3 - 1, s=x[2], fontsize=fontsize)
             core_channel += 1
         plt.title("makespan:{0}".format(self.makespan_compute()),
             fontsize=5, color="black", weight="light", ha='left', x=0)
@@ -103,7 +104,7 @@ if __name__ == "__main__":
     # ####### 1.手动DAG set ######## #
     DAG_Set.user_defined_dag()
     # ####### 2.随机生成DAG set ##### #
-    # DAG_Set.Random_DAG_Set(DAG_count=4, parallelism_list=[3, 4, 5,6], critical_path_list=[3, 4, 5, 6])
-    env.process(setup(env, DAG_Set, core_num=3))  # 开始执行!
+    # DAG_Set.Random_DAG_Set(DAG_count=4, parallelism_list=[3, 4, 5, 6], critical_path_list=[3, 4, 5, 6])
+    env.process(setup(env, DAG_Set, core_num=5))  # 开始执行!
     env.run(until=10000000)
 

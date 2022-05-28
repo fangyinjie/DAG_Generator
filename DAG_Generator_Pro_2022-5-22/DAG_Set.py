@@ -94,7 +94,6 @@ class DAG_Set:
 
     def get_priorituy_ready_node_list(self):
         temp_dict = {}
-        r_dict = {}
         ret_list = []
         for x in self.Dag_Set:
             temp_dict[x] = x.Priority

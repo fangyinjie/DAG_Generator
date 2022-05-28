@@ -408,7 +408,7 @@ def main(arg):
         env.run(until=arg.runtime)
         env.save_record()
         dt = time.process_time() - t
-        summary(dt,arg)
+        summary(dt, arg)
     else:
         t = time.process_time()
         env.process(init_sim(env, arg))

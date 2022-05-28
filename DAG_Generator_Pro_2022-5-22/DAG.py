@@ -257,6 +257,8 @@ class DAG:
             self.priority_Chen_config()
         elif Priority_Config_type == "Mine":
             self.priority_Mine_config()
+        elif Priority_Config_type == "Mine":
+            self.priority_Mine_config()
         else:
             print("priority config error!\n")
 

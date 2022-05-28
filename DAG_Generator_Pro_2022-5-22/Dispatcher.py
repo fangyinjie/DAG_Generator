@@ -6,19 +6,32 @@ import Core
 # import random
 # import networkx as nx
 
+# Schedule Strategy
+# (1) FCFS              First Come First Serve
+# (1) SJF/SPF/SRTN      Shortest Job First/Shortest Process First/Shortest Remain Time Next
+# (2) PSA               Priority-scheduling algorithm
+# (3) HRRN              Highest response ratio next
+# (2) RR                Round-Robin
+# (3) RM                Rate Monotonic Scheduling
+# (4) EDF               Earliest Deadline First Scheduling
+# (5) LLF               Least laxity first scheduling
+# (6) DM                Deadling Monotonic Scheduling
+# (7) MFQ               Multilevel Feedback Queue
 
 class Dispatcher_Workspace(object):
     """ 一个处理器（Processor），拥有特定数量的资源（core，内存，缓存等）。
     一个客户首先申请服务。在对应服务时间完成后结束并离开工作站 """
-
     def __init__(self, run_env, Dag_Set, core_num):
-        self.env        = run_env  # simpy实体
+        self.env        = run_env       # simpy实体
         self.Dag_Set    = Dag_Set
         self.core_num   = core_num
+        # 资源配置（CPU）
         # self.core_Set   = simpy.Resource(self.env, core_num)  # 类给env配资源
         self.core_Set   = simpy.PriorityStore(self.env, core_num)
-        items = [Core.Core(Core_ID="".format(x)) for x in range(3)]
-        self.env.process((self.core_Set.put(simpy.PriorityItem(item, item)) for item in items))
+        for x in range(3):
+            temp_core = Core.Core(Core_ID="".format(x))
+            self.core_Set.put(simpy.PriorityItem(1, temp_core))
+
         self.Dag_Set.Status_Dataup()  # 更新节点状态，所有前驱为0的节点进入就绪态
         self.makespan_dict = {}
         self.Temp_DAG_Set = copy.deepcopy(self.Dag_Set)
@@ -42,6 +55,9 @@ class Dispatcher_Workspace(object):
     # 每个core的运作，系统中有几个core就有几个Core_act进程
     def Core_act(self, environment, core_ID):
         while self.Temp_DAG_Set.get_node_num() > 0:
+            if Temp_DAG_Set.get
+            # (1)若CPU资源和就绪队列有一个为空，则等待事件；
+            # (2)否则将就绪队列中优先级最高的上处理器，包括抢占。
             with self.core_Set.request() as request:
                 yield request
                 # step1.有core资源的情况下，搜索当前的Dag_Set中处于就绪态的节点list。
@@ -105,33 +121,26 @@ class Dispatcher_Workspace(object):
         plt.show()
 
 
-def setup(environment, Dag, core_num):
-    """ 创建一个工作站，几个初始客户，然后持续有客户到达. 每隔 t_inter - 2, t_inter + 3分钟（可以自定义）. """
-    Dispatcher = Dispatcher_Workspace(environment, Dag, core_num)  # 分配器建立资源，只要有资源就开始运行
-    for i in range(core_num):
-        env.process(Dispatcher.Core_act(env, "core_{0}".format(i)))  # 创建clientNumber个初始客户
+def setup(environment, dag_set, core_num):
+    # 分配器建立资源，只要有资源就开始运行
+    while Dispatcher.Temp_DAG_Set.get_node_num() > 0:
+        for i in range(core_num):
+            env.process(Dispatcher.Core_act(env, "core_{0}".format(i)))  # 创建clientNumber个初始客户
     # while Dag_Set.get_node_num() > 0:
     while True:
         yield env.timeout(100)  # 在仿真过程中持续创建客户 3-8分钟
         # env.process(Client(env, 'Client_%d' % i, workstation))
 
 
-# def getter(wait):
-#     _, item = yield pstore.get()
-#     yield env.timeout(wait)
-#     log.append(item)
-#     # env.process((pstore.put(simpy.PriorityItem(item, item))))
-#     pstore.put(simpy.PriorityItem(item, item))
-
-
 if __name__ == "__main__":
 
-    env = simpy.Environment()       # 创建一个环境并开始仿真
+    environment = simpy.Environment()       # 创建一个环境并开始仿真
     DAG_Set = DAG_Set.DAG_Set()
     # ####### 1.手动DAG set ######## #
     # DAG_Set.user_defined_dag()
     # ####### 2.随机生成DAG set ##### #
     DAG_Set.Random_DAG_Set(DAG_count=4, parallelism_list=[3, 3, 3, 3], critical_path_list=[3, 3, 3, 3])
-    env.process(setup(env, DAG_Set, core_num=2))  # 开始执行!
-    env.run(until=10000000)
+    Dispatcher = Dispatcher_Workspace(environment, DAG_Set, core_num=3)
+    environment.process(setup(env, DAG_Set, core_num=2))  # 开始执行!
+    environment.run(until=10000000)
 
