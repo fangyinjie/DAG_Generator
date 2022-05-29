@@ -7,7 +7,7 @@ import Core
 # import networkx as nx
 
 # Schedule Strategy
-# (1) FCFS              First Come First Serve
+# (1) FCFS              FirstCome First Serve
 # (1) SJF/SPF/SRTN      Shortest Job First/Shortest Process First/Shortest Remain Time Next
 # (2) PSA               Priority-scheduling algorithm
 # (3) HRRN              Highest response ratio next
@@ -23,44 +23,53 @@ class Dispatcher_Workspace(object):
     """ 一个处理器（Processor），拥有特定数量的资源（core，内存，缓存等）。
     一个客户首先申请服务。在对应服务时间完成后结束并离开工作站 """
     def __init__(self, env, dag_set, core_num):
-        self.env        = env       # simpy实体
-        self.core_num   = core_num
-        # （1）初始化DAG集合
-        self.dag_set    = dag_set
-        self.dag_set.Status_Dataup()    # 更新节点状态，所有前驱为0的节点进入就绪态
-        self.Temp_DAG_Set = copy.deepcopy(self.dag_set)
-        # （2）初始化CPU资源
-        self.core_list = []
-        self.core_set   = simpy.PriorityStore(self.env, core_num)
+        self.env            = env
+        self.core_num       = core_num
+        # 1.initial the dag_set
+        self.dag_set        = dag_set
+        self.dag_set.Status_Dataup()    # update the status of nodes
+        self.Temp_DAG_Set   = copy.deepcopy(self.dag_set)
+        # 2.initial the CPU resource
+        self.cpu_resource   = simpy.PreemptiveResource(env, 1)
+        self.core_list      = []
         for x in range(self.core_num):
             temp_core = Core.Core()
             temp_core.Core_ID = "{0}".format(x)
             self.core_list.append(temp_core)
-            self.core_set.put(simpy.PriorityItem(1, temp_core))
-        # （3）初始化任务完成后反馈给任务管理器的event
+        # 3.initial the event that inform the dispatcher the job has finished
         self.job_event = self.env.event()       # event_1："job_finish"
         self.env.process(self.Setup())
+        # 4.PriorityStore save the ready node in Dag_Set.
+        self.node_store = simpy.FilterStore(self.env, capacity=1)
+        # self.node_set = simpy.PriorityStore(self.env, core_num)
+        # self.node_store.put(simpy.PriorityItem(1, temp_core))
 
-    def Setup(self):
+    def Core_Process(self, Core_obj):
+        with self.cpu_resource.request() as req:
+        # with self.cpu_resource.request(priority=x, preempt=True/False) as req:
+            yield req
+
+    def Dispatcher(self):
+        # 建立self.core_num个进程。每个进程表示一个cpu
+        for x in range(self.core_num):
+            self.env.process(self.Core_Process(self.core_list[x]))
         # while True:
         while self.Temp_DAG_Set.get_node_num() > 0:
-            # 1.获取Temp_DAG_Set中处于就绪态的节点列表
-            x, temp_node_list = \
+            res_bool, temp_node_list = \
                 self.Temp_DAG_Set.get_priority_ready_node_list()
-            # 如果就绪的node，不管有没有CPU直接开进程
-            if x:
-                for temp_dagx in temp_node_list:
-                    dag_ID = temp_dagx[0]
-                    for t_nodex in temp_dagx[1]:
-                        self.env.process(self.Core_Running(dag_ID, t_nodex))
+            if res_bool:
+                for y in temp_node_list:
+                    self.node_store.put(
+                        simpy.PriorityItem(y[1].get('priority'), y)
+                    )
             # 如果没有就绪的node，则等待node结束的event
             value = yield self.job_event
             if value == 'job_finish':
                 self.Temp_DAG_Set.Status_Dataup()
             else:
                 print('event job finish error!\n')
-        self.Show_Core_Set()
-        self.Show_Dag_And_Makespan()
+        # self.Show_Core_Set()
+        # self.Show_Dag_And_Makespan()
 
     def Core_Running(self, dag_ID, node):
         arrive_time = self.env.now                          # 1.记录到达时间
@@ -109,7 +118,7 @@ class Dispatcher_Workspace(object):
         core_channel = 0
         fort = {1: "core1", 2: "core2", 3: "core3"}
 
-        plt.yticks([1,2,3,4],["core1","core2","core3","core4"])
+        plt.yticks([1, 2, 3, 4], ["core1", "core2", "core3", "core4"])
 
         # for k, v in self.makespan_dict.items():
         #     for x in v:

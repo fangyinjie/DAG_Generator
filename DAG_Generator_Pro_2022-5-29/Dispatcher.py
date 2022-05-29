@@ -31,12 +31,10 @@ class Dispatcher_Workspace(object):
         self.Temp_DAG_Set = copy.deepcopy(self.dag_set)
         # （2）初始化CPU资源
         self.core_list = []
-        self.core_set   = simpy.PriorityStore(self.env, core_num)
         for x in range(self.core_num):
             temp_core = Core.Core()
             temp_core.Core_ID = "{0}".format(x)
             self.core_list.append(temp_core)
-            self.core_set.put(simpy.PriorityItem(1, temp_core))
         # （3）初始化任务完成后反馈给任务管理器的event
         self.job_event = self.env.event()       # event_1："job_finish"
         self.env.process(self.Setup())
