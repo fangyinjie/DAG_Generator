@@ -30,12 +30,12 @@ class Dispatcher_Workspace(object):
         self.dag_set.Status_Dataup()    # update the status of nodes
         self.Temp_DAG_Set   = copy.deepcopy(self.dag_set)
         # 2.initial the CPU resource
-        self.cpu_resource   = simpy.PreemptiveResource(env, 1)
-        self.core_list      = []
-        for x in range(self.core_num):
-            temp_core = Core.Core()
-            temp_core.Core_ID = "{0}".format(x)
-            self.core_list.append(temp_core)
+        # self.cpu_resource   = simpy.PreemptiveResource(env, 1)
+        # self.core_list      = []
+        # for x in range(self.core_num):
+        #     temp_core = Core.Core()
+        #     temp_core.Core_ID = "{0}".format(x)
+        #     self.core_list.append(temp_core)
         # 3.initial the event that inform the dispatcher the job has finished
         self.job_event = self.env.event()       # event_1："job_finish"
         self.env.process(self.Setup())
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     # ####### 2.随机生成DAG set ##### #
     # DAG_Set.Random_DAG_Set(DAG_count=4, parallelism_list=[3, 3, 3, 3], critical_path_list=[3, 3, 3, 3])
     Dispatcher = Dispatcher_Workspace(
-        env=environment, dag_set=DAG_Set, core_num=3)
+        env=environment, dag_set=DAG_Set, core_num=[3])
     # Dispatcher.Setup()
 
     environment.run(until=10000000)

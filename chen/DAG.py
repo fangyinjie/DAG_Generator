@@ -13,7 +13,7 @@ import random as rand
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-import rta1
+import rta
 import math
 import ast
 import sys
@@ -499,14 +499,17 @@ if __name__ == "__main__":
     """     """
 
     """ """
-    # input_G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
-    # input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
-    # # input_prio = {1: 9, 2: 8, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3, 8: 2, 9: 1}
+    input_G = {1: [2, 3, 4, 5, 9], 2: [9], 3: [6, 7, 8], 4: [7], 5: [7, 8], 6: [9], 7: [9], 8: [9], 9: []}
+    input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826, 5: 8589, 6: 12215, 7: 9543, 8: 15078, 9: 11261}
+    prio_list = list(range(1, len(input_C)+1))
+    rand.shuffle(prio_list)
+    input_prio = {x: prio_list[x-1] for x in range(1, len(input_C)+1)}
+    # input_prio = {1: 9, 2: 8, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3, 8: 2, 9: 1}
     # input_prio = {1: 0, 3: 1, 5: 2, 8: 3, 6: 4, 2: 5, 4: 6, 7: 7, 9: 8}
+    input_overide_prio = 0
     input_n_cores = 2
-    # G.DAG_config(input_G, input_C, input_prio)
-    input_G = {1: [2, 3], 2: [4], 3: [4], 4: []}
-    input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826}
+    # input_G = {1: [2, 3], 2: [4], 3: [4], 4: []}
+    # input_C = {1: 4581, 2: 17559, 3: 9352, 4: 7826}
 
     """ """
 
@@ -518,9 +521,10 @@ if __name__ == "__main__":
     overide_prio = ast.literal_eval(sys.argv[5])
     """
 
-    input_overide_prio = 0
+    G.DAG_config(input_G, input_C, input_prio)
+
     G.critical_path_config()                  # 关键路径分析
-    G.graph_node_position_determine()         # DAG节点位置确定
+    # G.graph_node_position_determine()         # DAG节点位置确定
     # G.dag_param_critical_update()           # DAG数据分析
     #################
     # 响应时间分析
@@ -528,8 +532,8 @@ if __name__ == "__main__":
     # 1.he 2019 方法
     print('he 2019 方法')
     # he_p = rta.Eligiblity_Ordering_PA_legacy(input_G, input_C)
-    R, alpha_arr, beta_arr = rta1.rta_alphabeta_new(input_G, input_C, prio_=[], m=input_n_cores, EOPA=True, TPDS=False)
-    he_p = rta1.Eligiblity_Ordering_PA(input_G, input_C)
+    R, alpha_arr, beta_arr = rta.rta_alphabeta_new(input_G, input_C, prio_=[], m=input_n_cores, EOPA=True, TPDS=False)
+    he_p = rta.Eligiblity_Ordering_PA(input_G, input_C)
     # he_r = rta.TPDS_rta_new(input_G, input_C, input_prio, input_n_cores)    # 自备优先级算法
     # print(he_r)
     # he_r = rta.TPDS_rta_new_pro(input_G, input_C, input_n_cores)          # 使用其他的优先级
@@ -540,8 +544,10 @@ if __name__ == "__main__":
     # 2.zhao 2020 方法
     print('zhao 2020 方法')
     # def TPDS_rta(G_dict, C_dict, m):
-    R = rta1.TPDS_rta(input_G, input_C, input_n_cores)
+    Prio = rta.Eligiblity_Ordering_PA(input_G, input_C)
+    R = rta.TPDS_rta(input_G, input_C, input_n_cores)
     print(R)
+    print(Prio)
     # print(alpha_arr)
     # print(beta_arr)
     print('\n')
@@ -550,26 +556,4 @@ if __name__ == "__main__":
     print('基础方法')
     x = G.response_time_analysis(input_n_cores)
     print(math.ceil(x[0]))
-
-
-    # plt.title('DAG generator' +
-    #           '\n Is a DAG:{0}'.format(nx.is_directed_acyclic_graph(G.get_graph())) +  # 检测是否是有向无环图
-    #           '\n number of nodes for DAG:{0}'.format(G.G.number_of_nodes()) +  # 返回G的节点数量
-    #           '\n number of edges for DAG:{0}'.format(G.G.number_of_edges()) +  # 返回G的边数量
-    #           '',
-    #           fontsize=10, color="black", weight="light", ha='left', x=0)  # style="italic",
-    # plt.xlabel('crirical={}'.format(G.Critical_path))
-    # plt.ylabel('param={}'.format(G.parallelism))
-    plt.show()
-
-
-
-
-    # 传递闭包***
-    # 有向图的 transitive closure；
-    # nx.transitive_closure(G, reflexive=False)
-    # 如果有向无环形图的transitive closure；
-    # nx.transitive_closure_dag(G.get_graph(), topo_order=None)
-    # print('1', np.array(nx.adjacency_matrix(G.get_graph()).todense()))
-    # print('2', np.array(nx.adjacency_matrix(G1).todense()))
 

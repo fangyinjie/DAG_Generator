@@ -469,9 +469,9 @@ def rta_alphabeta_new(G_, C_, prio_, m, overide_prio=0, EOPA=False, TPDS=False):
 
         Prio[sink_node_idx] = A_VERY_LARGE_NUMBER
 
-        for key in sorted(Prio.keys()):
-            print("{0}:{1}".format(key, Prio[key]), end=',')
-        print("")
+        # for key in sorted(Prio.keys()):
+        #     print("{0}:{1}".format(key, Prio[key]), end=',')
+        # print("")
 
     # ==========================================================================
     # iteratives all providers (first time, to get all finish times)
