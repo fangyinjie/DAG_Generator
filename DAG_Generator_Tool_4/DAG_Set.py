@@ -65,6 +65,13 @@ class DAG_Set:
     #####################################
     #   获取DAG集合中所有就绪节点
     #####################################
+    def get_ready_node(self):
+        temp_dict = {}
+        for x in self.Dag_Set:
+            temp_ready_list = x.get_ready_node_list()
+            temp_dict[x.DAG_ID] = temp_ready_list
+        return temp_dict
+
     def get_priorituy_ready_node(self):
         temp_dict = {}
         r_dict = {}

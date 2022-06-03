@@ -8,6 +8,7 @@ import Core
 import Metric
 from random import randint
 
+
 class Dispatcher_Workspace(object):
     def __init__(self, env, dag_set, core_num_list):
         self.env            = env           # simpy entity
@@ -31,7 +32,8 @@ class Dispatcher_Workspace(object):
     def Run(self):
         for Proccessor_ID in range(len(self.core_num_list)):
             for x in range(self.core_num_list[Proccessor_ID]):
-                self.env.process(self.Core_running(self.core_obj_list[Proccessor_ID][x], "RANDOM"))
+                # self.env.process(self.Core_running(self.core_obj_list[Proccessor_ID][x], "RANDOM"))
+                self.env.process(self.Core_running(self.core_obj_list[Proccessor_ID][x], "WCET"))
         self.Temp_DAG_Set.Status_Data_Up_Store(self.node_store)
 
     def Core_running(self, core_obj, run_type="WCET"):
@@ -60,8 +62,8 @@ class Dispatcher_Workspace(object):
                 finish_time=finish_time)
             self.Temp_DAG_Set.Status_Data_Up_Store(self.node_store)
             if self.Temp_DAG_Set.get_node_num() == 0:
-                # self.show_dag_and_makespan()
-                self.env.exit()
+                self.show_dag_and_makespan()
+                # self.env.exit()
 
     def show_dag_and_makespan(self):
         for x in range(0, len(self.dag_set.Dag_Set)):
@@ -106,8 +108,10 @@ class Dispatcher_Workspace(object):
             for y in x:
                 temp_makespan_list.append(y.Get_core_finish_time())
         temp_makespan = max(temp_makespan_list)
-        plt.title("makespan:{0}\nCPU_utilization:{1:2f}".format(
-            temp_makespan, Metric.CPU_uilization(self.core_obj_list, temp_makespan)),
+        plt.title("makespan:{0}\nCPU_utilization:{1:2f}\nDAG_VOL:{2}".format(
+            temp_makespan,
+            Metric.CPU_uilization(self.core_obj_list, temp_makespan),
+            Metric.DAG_Set_volume(self.dag_set)),
             fontsize=5, color="black", weight="light", ha='left', x=0)
         plt.yticks(yticke_1, yticke_2, fontsize=8)
         plt.xticks(rotation=30)
@@ -124,6 +128,6 @@ if __name__ == "__main__":
     DAG_Set.user_defined_dag()
     # ####### 2.随机生成DAG set ##### #
     # DAG_Set.Random_DAG_Set(DAG_count=3, parallelism_list=[3, 4, 5], critical_path_list=[3, 4, 5])
-    Dispatcher = Dispatcher_Workspace(envi, DAG_Set, core_num_list=[2])
+    Dispatcher = Dispatcher_Workspace(envi, DAG_Set, core_num_list=[3])
     Dispatcher.Run()
     envi.run()

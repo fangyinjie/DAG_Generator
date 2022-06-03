@@ -1,7 +1,7 @@
 """
 RR scheduling sim for single-core (or multi) cpu
 Requires: Python 3.6
-Dependencies: simpy, numpy, 
+Dependencies: simpy, numpy,
 Optional dep: scipy, pyqt5, matplotlib 2.0
 
 Check SimPy domcumentation to better understand how the sim works:
@@ -9,17 +9,17 @@ https://media.readthedocs.org/pdf/simpy/latest/simpy.pdf
 
 If no plotting, only simpy and numpy are required
 
-Only string formatting using f-literals is a compatability issue 
-which whas introduced in Python 3.6. Otherwise, it should run 
+Only string formatting using f-literals is a compatability issue
+which whas introduced in Python 3.6. Otherwise, it should run
 on < Python 3. Just modify or remove print formats with f-literals.
 
----- How it works (basically) -----: 
+---- How it works (basically) -----:
 main() creates the simulation environment env(), then passes it to init_sim()
 
-init_sim() creates the CPU() Resource and generates Job() events and 
+init_sim() creates the CPU() Resource and generates Job() events and
 sends them to job_proc()
 
-job_proc() runs the events. When/if the quantum expires, the job is 
+job_proc() runs the events. When/if the quantum expires, the job is
 appended to the back of the queue.
 
 ---- Other stuff ----
@@ -43,149 +43,149 @@ import random
 from random import randint, expovariate
 import numpy as np
 from array import array
-from PlotQt import *
+# from PlotQt import *
 from numpy.core.fromnumeric import mean
 from collections import namedtuple
 
-# Default parameters
-RAND_SEED = 50  # rand seed to reproduce
-TIME_QUANTUM = 3  # time quantum
-SERVICE_TIME = [4, 8]
-NUM_CORES = 1  # number of cpu cores
-CONTEXT_SWITCH = 0
-# INTER_TIME = [30, 300]
-INTER_T = (1 / 8)  # 1 arrival every 8 seconds
-SIM_TIME = 20000
-MAX_PROC = 1000
-STOP_SIG = 1000
+# # Default parameters
+# RAND_SEED = 50  # rand seed to reproduce
+# TIME_QUANTUM = 3  # time quantum
+# SERVICE_TIME = [4, 8]
+# NUM_CORES = 1  # number of cpu cores
+# CONTEXT_SWITCH = 0
+# # INTER_TIME = [30, 300]
+# INTER_T = (1 / 8)  # 1 arrival every 8 seconds
+# SIM_TIME = 20000
+# MAX_PROC = 1000
+# STOP_SIG = 1000
 
 
-def plots(arg):
-    try:
-        import matplotlib
-        matplotlib.use('Qt5Agg')
-        import matplotlib.pyplot as plt
-        from scipy import stats
-        path = 'figures/'
-        plt.close('all')
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-
-        f, (ax1, ax2, ax3) = plt.subplots(3, figsize=(10, 15))
-        f.tight_layout(pad=2, h_pad=1.0)
-        ax1.hist(Record.q_size,
-                 histtype='bar',
-                 bins=18,
-                 normed=1)
-        ax1.axis([0, 15, 0, 0.3])
-        ax1.set_title("Queue Size (Normalized) (TQ = %d, $\lambda=1/8$, jobs= %d)"
-                  % (arg.quantum, len(Record.jobs_completed)))
-        ax2.hist(list(x.trnd_t for x in Record.jobs_completed),
-                 histtype='bar',
-                 bins="auto",
-                 normed=0)
-        ax2.set_title("Wait Time (TQ = %d, $\lambda=1/8$, jobs= %d)"
-                  % (arg.quantum, len(Record.jobs_completed)))
-        ax2.axis([0, 100, 0, 250])
-        ax3.hist(list(x.wait_t for x in Record.jobs_completed),
-                 histtype='bar',
-                 bins="auto",
-                 normed=0)
-        ax3.set_title("Turnaround Time (TQ = %d, $\lambda=1/8$, jobs= %d)"
-                  % (arg.quantum, len(Record.jobs_completed)))
-        ax3.axis([0, 100, 0, 250])
-        f.subplots_adjust(hspace=0.2)
-        fname = "TQ-%d.%s" % (arg.quantum, arg.ext)
-        f.savefig(path + fname, format=arg.ext)
-
-        plt.figure(figsize=(15, 10))
-        plt.step(Record.q_time,
-                 stats.zscore(Record.mean_burst),
-                 where="mid",
-                 label="Average Service Time")
-
-        plt.step(Record.q_time,
-                 stats.zscore(Record.q_size),
-                 where="mid",
-                 label="Queue Size")
-        plt.title("Queue Size vs Time (TQ = %d, $\lambda=1/8$, jobs= %d)"
-                  % (arg.quantum, arg.jobs))
-        plt.legend()
-
-        fname = "TQ-%d-Time-Series.%s" % (arg.quantum, arg.ext)
-        plt.savefig(path + fname, format=arg.ext)
-        plt.show()
-    except ImportError as i:
-        print("Missing %s" % i)
-
-
-def convolve(x, N):
-    # helper function, to compute a moving average
-    cumsum = np.cumsum(np.insert(x, 0, 0))
-    m = np.append(np.zeros(N), (cumsum[N:] - cumsum[:-N]) / N)
-    return array("d", m)
+# def plots(arg):
+#     try:
+#         import matplotlib
+#         matplotlib.use('Qt5Agg')
+#         import matplotlib.pyplot as plt
+#         from scipy import stats
+#         path = 'figures/'
+#         plt.close('all')
+#         os.makedirs(os.path.dirname(path), exist_ok=True)
+#
+#         f, (ax1, ax2, ax3) = plt.subplots(3, figsize=(10, 15))
+#         f.tight_layout(pad=2, h_pad=1.0)
+#         ax1.hist(Record.q_size,
+#                  histtype='bar',
+#                  bins=18,
+#                  normed=1)
+#         ax1.axis([0, 15, 0, 0.3])
+#         ax1.set_title("Queue Size (Normalized) (TQ = %d, $\lambda=1/8$, jobs= %d)"
+#                   % (arg.quantum, len(Record.jobs_completed)))
+#         ax2.hist(list(x.trnd_t for x in Record.jobs_completed),
+#                  histtype='bar',
+#                  bins="auto",
+#                  normed=0)
+#         ax2.set_title("Wait Time (TQ = %d, $\lambda=1/8$, jobs= %d)"
+#                   % (arg.quantum, len(Record.jobs_completed)))
+#         ax2.axis([0, 100, 0, 250])
+#         ax3.hist(list(x.wait_t for x in Record.jobs_completed),
+#                  histtype='bar',
+#                  bins="auto",
+#                  normed=0)
+#         ax3.set_title("Turnaround Time (TQ = %d, $\lambda=1/8$, jobs= %d)"
+#                   % (arg.quantum, len(Record.jobs_completed)))
+#         ax3.axis([0, 100, 0, 250])
+#         f.subplots_adjust(hspace=0.2)
+#         fname = "TQ-%d.%s" % (arg.quantum, arg.ext)
+#         f.savefig(path + fname, format=arg.ext)
+#
+#         plt.figure(figsize=(15, 10))
+#         plt.step(Record.q_time,
+#                  stats.zscore(Record.mean_burst),
+#                  where="mid",
+#                  label="Average Service Time")
+#
+#         plt.step(Record.q_time,
+#                  stats.zscore(Record.q_size),
+#                  where="mid",
+#                  label="Queue Size")
+#         plt.title("Queue Size vs Time (TQ = %d, $\lambda=1/8$, jobs= %d)"
+#                   % (arg.quantum, arg.jobs))
+#         plt.legend()
+#
+#         fname = "TQ-%d-Time-Series.%s" % (arg.quantum, arg.ext)
+#         plt.savefig(path + fname, format=arg.ext)
+#         plt.show()
+#     except ImportError as i:
+#         print("Missing %s" % i)
 
 
-def summary(dt, arg):  # Print out your summary data
-    # PEP 8, no more lambda assignment, use inline def?
-    def avg(x): return sum(x) / len(x)
-    print("\n================================= "
-          "Summary "
-          "===================================\n")
-    print("Time elapsed:", dt)
-    print("Quantum: %d" % arg.quantum)
-    print("Context Switch: %d" % arg.context)
-    print('Mean turnaround: %1.2f' % avg(list(x.trnd_t for x in Record.jobs_completed)))
-    print('Mean wait time: %1.2f' % avg(list(x.wait_t for x in Record.jobs_completed)))
-    print('Queue size at finish: %d' % (Record.q_size[-1]-1)) # bug, queue ending with +1 item
-    print("\n{0:<10s} {1:<10s} {2:<10s} {3:<10s} {4:<10s} {5:<10s} {6:<10s}"
-          .format("job", "arrive", "service", "init wait", "finish", "wait", "turnaround"))
-    print(*(x.__str__(True) for x in sorted(Record.jobs_completed,
-                                            key=lambda k: k.arrive_t)), sep='\n')
-    print('======================================'
-          '======================================')
+# def convolve(x, N):
+#     # helper function, to compute a moving average
+#     cumsum = np.cumsum(np.insert(x, 0, 0))
+#     m = np.append(np.zeros(N), (cumsum[N:] - cumsum[:-N]) / N)
+#     return array("d", m)
 
 
-class Record:
-    """
-    This is for record-keeping
-    Arrays are better on performance when they are being 
-    frequently manipulated, as opposed to lists. 
+# def summary(dt, arg):  # Print out your summary data
+#     # PEP 8, no more lambda assignment, use inline def?
+#     def avg(x): return sum(x) / len(x)
+#     print("\n================================= "
+#           "Summary "
+#           "===================================\n")
+#     print("Time elapsed:", dt)
+#     print("Quantum: %d" % arg.quantum)
+#     print("Context Switch: %d" % arg.context)
+#     print('Mean turnaround: %1.2f' % avg(list(x.trnd_t for x in Record.jobs_completed)))
+#     print('Mean wait time: %1.2f' % avg(list(x.wait_t for x in Record.jobs_completed)))
+#     print('Queue size at finish: %d' % (Record.q_size[-1]-1)) # bug, queue ending with +1 item
+#     print("\n{0:<10s} {1:<10s} {2:<10s} {3:<10s} {4:<10s} {5:<10s} {6:<10s}"
+#           .format("job", "arrive", "service", "init wait", "finish", "wait", "turnaround"))
+#     print(*(x.__str__(True) for x in sorted(Record.jobs_completed,
+#                                             key=lambda k: k.arrive_t)), sep='\n')
+#     print('======================================'
+#           '======================================')
 
-    Pretty much all parameters and simulation state at every
-    step is saved in this. Once the simulation terminates, 
-    this object is pickled and saved as a binary which can 
-    be loaded later on without having to rerun the simulation 
 
-    Some of the fields are redundant and not being used right now.
-    """
-    # norm = lambda X : [ ((n - min(X)) / (max(X) - min(X))) for n in X]
-    sim_t = SIM_TIME  # simulation duration
-    inter_t = INTER_T  # param for arrival time
-    randseed = RAND_SEED  # random seed used
-    quantum_t = TIME_QUANTUM  # time quantum used
-    num_cores = NUM_CORES  # number of cores
-    cswitch_t = CONTEXT_SWITCH  # context switch size used
-
-    # Gonna keep a list of every job instance that completes
-    jobs_completed = []
-    total_t = 0  # sum of all jobs burst times
-    total_burst = array("d", [])  # sum of burst times at each step
-    total_hist_t = array("d", [])  # step at which burst total was recorded
-    q_size = array("d", [])  # size of queue at each step
-    q_time = array("d", [])  # step at which queue size was recorded
-    times = array("d", [])
-    mean_burst = array("d", [])
-    wait_t = array("d", [])
-    trnd_t = array("d", [])
-    mean_wait = array("d", [])
-    mean_trnd = array("d", [])
-    pids = array("i", [])  # pids
-    arrivals = array("d", [])  # arrival times of jobs
-    finish = array("d", [])  # finish time of jobs
-    # IF going to be doing a run-test
-    run_test = False
-    arrive_times = []
-    service_times = []
+# class Record:
+#     """
+#     This is for record-keeping
+#     Arrays are better on performance when they are being
+#     frequently manipulated, as opposed to lists.
+#
+#     Pretty much all parameters and simulation state at every
+#     step is saved in this. Once the simulation terminates,
+#     this object is pickled and saved as a binary which can
+#     be loaded later on without having to rerun the simulation
+#
+#     Some of the fields are redundant and not being used right now.
+#     """
+#     # norm = lambda X : [ ((n - min(X)) / (max(X) - min(X))) for n in X]
+#     sim_t = SIM_TIME  # simulation duration
+#     inter_t = INTER_T  # param for arrival time
+#     randseed = RAND_SEED  # random seed used
+#     quantum_t = TIME_QUANTUM  # time quantum used
+#     num_cores = NUM_CORES  # number of cores
+#     cswitch_t = CONTEXT_SWITCH  # context switch size used
+#
+#     # Gonna keep a list of every job instance that completes
+#     jobs_completed = []
+#     total_t = 0  # sum of all jobs burst times
+#     total_burst = array("d", [])  # sum of burst times at each step
+#     total_hist_t = array("d", [])  # step at which burst total was recorded
+#     q_size = array("d", [])  # size of queue at each step
+#     q_time = array("d", [])  # step at which queue size was recorded
+#     times = array("d", [])
+#     mean_burst = array("d", [])
+#     wait_t = array("d", [])
+#     trnd_t = array("d", [])
+#     mean_wait = array("d", [])
+#     mean_trnd = array("d", [])
+#     pids = array("i", [])  # pids
+#     arrivals = array("d", [])  # arrival times of jobs
+#     finish = array("d", [])  # finish time of jobs
+#     # IF going to be doing a run-test
+#     run_test = False
+#     arrive_times = []
+#     service_times = []
 
 
 class Env(simpy.Environment):
@@ -211,59 +211,59 @@ class Env(simpy.Environment):
     def step(self):
         return simpy.Environment.step(self)
 
-    @staticmethod
-    def save_record():
-        filepath = 'bin/Record.p'
-        os.makedirs(os.path.dirname(filepath), exist_ok=True)
-        print('Writing record to %s' % filepath)
-        pickle.dump(Record, open(filepath, 'wb'))
-        return
+    # @staticmethod
+    # def save_record():
+    #     filepath = 'bin/Record.p'
+    #     os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    #     print('Writing record to %s' % filepath)
+    #     pickle.dump(Record, open(filepath, 'wb'))
+    #     return
 
 
-class Job(simpy.events.Event):
-    """
-    The Job() class is the primary event, where each 
-    new job is added to the waiting queue for access to the
-    CPU (Resource). 
-    Most of this class is just keeping track of specific 
-    information like arrival time, turnaround time, wait time, etc..
-    """
-    def __init__(self, pid, arrive_t, env, rand=randint):
-        # If test info is being used, initialize that first
-        super().__init__(env)
-        if len(Record.service_times) > 0:
-            self.service_t = Record.service_times.pop(0)
-        else:
-            # Otherwise, its going to be a random service time
-            self.service_t = rand(*SERVICE_TIME)  # random service time
-        self.id = pid
-        self.arrive_t = arrive_t
-        self.finish_t = 0
-        self.trnd_t = 0
-        self.wait_t = 0
-        self.remain_t = self.service_t
-        self.initial_wait = 0
-
-    def get_trnd(self, finish_t):
-        # When the job finishes, compute the turnaround/wait time
-        self.finish_t = finish_t
-        self.trnd_t = self.finish_t - self.arrive_t
-        self.wait_t = self.trnd_t - self.service_t
-        return self.trnd_t, self.wait_t
-
-    def trigger(self, event):
-        return simpy.events.Event.trigger(self, event)
-
-    def __repr__(self):
-        return simpy.events.Event.__repr__(self)
-
-    def __str__(self, *args, **kwargs):
-        if args:
-            return f'{self.id:<10s} {self.arrive_t:<10d} ' \
-                   f'{self.service_t:<10d} {self.initial_wait:<10d} ' \
-                   f'{self.finish_t:<10d} {self.wait_t:<10d} {self.trnd_t:<10d}'
-        else:
-            return self.id
+# class Job(simpy.events.Event):
+#     """
+#     The Job() class is the primary event, where each
+#     new job is added to the waiting queue for access to the
+#     CPU (Resource).
+#     Most of this class is just keeping track of specific
+#     information like arrival time, turnaround time, wait time, etc..
+#     """
+#     def __init__(self, pid, arrive_t, env, rand=randint):
+#         # If test info is being used, initialize that first
+#         super().__init__(env)
+#         if len(Record.service_times) > 0:
+#             self.service_t = Record.service_times.pop(0)
+#         else:
+#             # Otherwise, its going to be a random service time
+#             self.service_t = rand(*SERVICE_TIME)  # random service time
+#         self.id = pid
+#         self.arrive_t = arrive_t
+#         self.finish_t = 0
+#         self.trnd_t = 0
+#         self.wait_t = 0
+#         self.remain_t = self.service_t
+#         self.initial_wait = 0
+#
+#     def get_trnd(self, finish_t):
+#         # When the job finishes, compute the turnaround/wait time
+#         self.finish_t = finish_t
+#         self.trnd_t = self.finish_t - self.arrive_t
+#         self.wait_t = self.trnd_t - self.service_t
+#         return self.trnd_t, self.wait_t
+#
+#     def trigger(self, event):
+#         return simpy.events.Event.trigger(self, event)
+#
+#     def __repr__(self):
+#         return simpy.events.Event.__repr__(self)
+#
+#     def __str__(self, *args, **kwargs):
+#         if args:
+#             return f'{self.id:<10s} {self.arrive_t:<10d} ' \
+#                    f'{self.service_t:<10d} {self.initial_wait:<10d} ' \
+#                    f'{self.finish_t:<10d} {self.wait_t:<10d} {self.trnd_t:<10d}'
+#         else:
+#             return self.id
 
 
 class CPU(simpy.Resource):
@@ -274,8 +274,8 @@ class CPU(simpy.Resource):
         self.env = args
         self.data = []
         self.waiting = []
-        self.quantum = quantum
-        self.context = context
+        # self.quantum = quantum
+        # self.context = context
 
     def request(self, pid, *args, **kwargs):
         if pid:
@@ -285,21 +285,21 @@ class CPU(simpy.Resource):
     def release(self, *args, **kwargs):
         return super().release(*args, **kwargs)
 
-    def do_job(self, env, pid):
-        # Either the job completes or is interrupted by a timeout
-        try:
-            yield env.timeout(pid.remain_t)
-            Record.total_t -= pid.remain_t
-        except simpy.Interrupt as i:
-            print("{0:<8d} {1:<9s}".format(int(env.now), str(pid)), end='')
-            print(i.cause, end='')
-            print('{0:>13s} {1:<10.0f}'.format('remain =', pid.remain_t))
-            Record.total_t -= self.quantum
-        # Some record-keeping
-        Record.total_burst.append(Record.total_t)
-        Record.mean_burst.append(self.check_queue())
-        Record.q_time.append(env.now)
-        Record.q_size.append(len(self.waiting))
+    # def do_job(self, env, pid):
+    #     # Either the job completes or is interrupted by a timeout
+    #     try:
+    #         yield env.timeout(pid.remain_t)
+    #         Record.total_t -= pid.remain_t
+    #     except simpy.Interrupt as i:
+    #         print("{0:<8d} {1:<9s}".format(int(env.now), str(pid)), end='')
+    #         print(i.cause, end='')
+    #         print('{0:>13s} {1:<10.0f}'.format('remain =', pid.remain_t))
+    #         Record.total_t -= self.quantum
+    #     # Some record-keeping
+    #     Record.total_burst.append(Record.total_t)
+    #     Record.mean_burst.append(self.check_queue())
+    #     Record.q_time.append(env.now)
+    #     Record.q_size.append(len(self.waiting))
 
     def check_queue(self):
         s = 0

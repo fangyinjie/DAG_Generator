@@ -657,6 +657,16 @@ class DAG_Set:
     #####################################
     #   获取DAG集合中所有就绪节点
     #####################################
+    def get_ready_node(self):  # just node
+        # temp_dict = {}
+        temp_list = []
+        for x in self.Dag_Set:
+            temp_list += (x.get_ready_node_list())
+        return temp_list
+        #     temp_ready_list = x.get_ready_node_list()
+        #     temp_list[x.DAG_ID] = temp_ready_list
+        # return temp_dict
+
     def get_priorituy_ready_node(self):
         temp_dict = {}
         r_dict = {}
@@ -737,7 +747,7 @@ class DAG_Set:
         G2_2_2_M.Priority = 2
         G2_2_3_M.Priority = 1
 
-        self.Add_DAG(G1_1_1_M)
+        # self.Add_DAG(G1_1_1_M)
         # self.Add_DAG(G1_1_2_M)
 
         # self.Add_DAG(G1_2_1_M)
@@ -747,8 +757,8 @@ class DAG_Set:
         # self.Add_DAG(G2_1_2_M)
         # self.Add_DAG(G2_1_3_M)
 
-        # self.Add_DAG(G2_2_1_M)
-        # self.Add_DAG(G2_2_2_M)
+        self.Add_DAG(G2_2_1_M)
+        self.Add_DAG(G2_2_2_M)
         # self.Add_DAG(G2_2_3_M)
         self.Mulit_DAG_Priority_Config()
 

@@ -532,20 +532,21 @@ if __name__ == "__main__":
     # 1.he 2019 方法
     print('he 2019 方法')
     # he_p = rta.Eligiblity_Ordering_PA_legacy(input_G, input_C)
-    R, alpha_arr, beta_arr = rta.rta_alphabeta_new(input_G, input_C, prio_=[], m=input_n_cores, EOPA=True, TPDS=False)
+    R = rta.TPDS_rta(input_G, input_C, input_n_cores)
     he_p = rta.Eligiblity_Ordering_PA(input_G, input_C)
     # he_r = rta.TPDS_rta_new(input_G, input_C, input_prio, input_n_cores)    # 自备优先级算法
     # print(he_r)
     # he_r = rta.TPDS_rta_new_pro(input_G, input_C, input_n_cores)          # 使用其他的优先级
     # print(he_r)
     print(he_p)
+    print(R)
     print('\n')
 
     # 2.zhao 2020 方法
     print('zhao 2020 方法')
     # def TPDS_rta(G_dict, C_dict, m):
     Prio = rta.Eligiblity_Ordering_PA(input_G, input_C)
-    R = rta.TPDS_rta(input_G, input_C, input_n_cores)
+    R, alpha_arr, beta_arr = rta.rta_alphabeta_new(input_G, input_C, prio_=[], m=input_n_cores, EOPA=True, TPDS=False)
     print(R)
     print(Prio)
     # print(alpha_arr)
