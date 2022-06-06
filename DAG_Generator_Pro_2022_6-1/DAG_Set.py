@@ -645,6 +645,15 @@ class DAG_Set:
                 return x
         return False
 
+    # #####################################
+    # #   根据DAG_ID, Node_ID 获取对应的node
+    # #####################################
+    # def get_node(self, DAG_ID, Node_ID):
+    #     for x in self.Dag_Set:
+    #         if x.DAG_ID == DAG_ID:
+    #             return x.G.node[Node_ID]
+    #     return False
+
     #####################################
     #   获取DAG集合中所有节点的数量#
     #####################################
@@ -657,15 +666,24 @@ class DAG_Set:
     #####################################
     #   获取DAG集合中所有就绪节点
     #####################################
-    def get_ready_node(self):  # just node
-        # temp_dict = {}
+    def get_ready_node(self):
         temp_list = []
         for x in self.Dag_Set:
-            temp_list += (x.get_ready_node_list())
+            temp_ready_list = x.get_ready_node_list()
+            for y in temp_ready_list:
+                temp_list.append((x.DAG_ID, y))
         return temp_list
-        #     temp_ready_list = x.get_ready_node_list()
-        #     temp_list[x.DAG_ID] = temp_ready_list
-        # return temp_dict
+
+    #
+    # def get_ready_node(self):  # just node
+    #     # temp_dict = {}
+    #     temp_list = []
+    #     for x in self.Dag_Set:
+    #         temp_list += (x.get_ready_node_list())
+    #     return temp_list
+    #     #     temp_ready_list = x.get_ready_node_list()
+    #     #     temp_list[x.DAG_ID] = temp_ready_list
+    #     # return temp_dict
 
     def get_priorituy_ready_node(self):
         temp_dict = {}
@@ -750,17 +768,18 @@ class DAG_Set:
         # self.Add_DAG(G1_1_1_M)
         # self.Add_DAG(G1_1_2_M)
 
-        # self.Add_DAG(G1_2_1_M)
-        # self.Add_DAG(G1_2_2_M)
+        self.Add_DAG(G1_2_1_M)
+        self.Add_DAG(G1_2_2_M)
 
         # self.Add_DAG(G2_1_1_M)
         # self.Add_DAG(G2_1_2_M)
         # self.Add_DAG(G2_1_3_M)
 
-        self.Add_DAG(G2_2_1_M)
-        self.Add_DAG(G2_2_2_M)
+        # self.Add_DAG(G2_2_1_M)
+        # self.Add_DAG(G2_2_2_M)
         # self.Add_DAG(G2_2_3_M)
         self.Mulit_DAG_Priority_Config()
+
 
 if __name__ == "__main__":
     dagset = DAG_Set()

@@ -14,16 +14,17 @@ class Core:
         self.Core_Type              = ''        # e.g. 'Cortex-M3'；
         self.Core_Running_Task      = []        # the running log about this core
         self.Core_Finish_Time       = 0         # absolute time
-        self.Current_Running_Node   = 0
+        self.Current_Running_Node   = {'DAG_ID': 0, 'Node_ID': 0}
 
-    def Insert_Task_Info(self, dag_ID, node_ID, arrive_time, star_time, finish_time):
+    def Insert_Task_Info(self, dag_ID, node_ID, arrive_time, star_time, finish_time, node_name):
         temp_dict = {
             'dag_ID':           dag_ID,
             'node_ID':          node_ID,
             'arrive_time':      arrive_time,
             'star_time':        star_time,
             'finish_time':      finish_time,
-            'execution_time':   finish_time - star_time}
+            'execution_time':   finish_time - star_time,
+            'node_name':        node_name}
         self.Core_Running_Task.append(temp_dict)
         return True
 

@@ -128,6 +128,6 @@ if __name__ == "__main__":
     DAG_Set.user_defined_dag()
     # ####### 2.随机生成DAG set ##### #
     # DAG_Set.Random_DAG_Set(DAG_count=3, parallelism_list=[3, 4, 5], critical_path_list=[3, 4, 5])
-    Dispatcher = Dispatcher_Workspace(envi, DAG_Set, core_num_list=[3])
+    Dispatcher = Dispatcher_Workspace(envi, DAG_Set, core_num_list=[10])
     Dispatcher.Run()
     envi.run()
