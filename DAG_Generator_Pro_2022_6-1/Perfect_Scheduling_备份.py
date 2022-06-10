@@ -51,6 +51,48 @@ class Scheduler(object):
             x.Current_Running_Node = temp_node
         return Idle_Core_Set
 
+    def process(self, C_State, BET_BEQ_dict):
+        pass
+        return 1,2
+
+    # C_State = [   {"Core_ID":"Core_0", "C_state":[{}], "Finish_time":0, "Process_node":node},
+    #               {"Core_ID":"Core_1", "C_state":[{}], "Finish_time":0, "Process_node":node},
+    #               {"Core_ID":"Core_2", "C_state":[{}], "Finish_time":0, "Process_node":node}  ]
+    def Perfect_scheduling(self, dag_set, current_time, c_state):
+        # 复制 temp_dag 防止迭代误操作
+        temp_dag_set = copy.deepcopy(dag_set)
+        # (1) 所有未步进时的未完成的core
+        # c_state_list = [c_state_x for c_state_x in C_State if (c_state_x["Finish_time"]-current_time > 0)]
+        c_state_list = [c_state_x for c_state_x in c_state if (c_state_x.Core_Finish_Time - current_time > 0)]
+        # (2) 在运行的核心中选择完成时间最早的core为下一次的步长
+        current_time_1 = current_time           # (3.1)如果没有处于运行态的core则步长为0
+        if len(c_state_list) > 0:               # (3.2)如果有处于运行态的core则计算运行态core中最早的完成时间
+            min_ret = self.min_node(c_state_list)
+            Finish_Node_list = min_ret['Finish_Node']
+            current_time_1 = current_time + min_ret['step_time']
+            # (4) 删除 Finish_Node
+            for x in Finish_Node_list:
+                temp_dag_set.delet_DAG_Node(x['DAG_ID'], x['Node_ID'])
+        # (5) 获取步进后的temp_dag_set的就绪节点集合（删除步进后的完成节点）
+        temp_dag_set.Status_Data_Up()
+        Ready_Node_Set = temp_dag_set.get_ready_node()  # temp_dag_set.获取就绪节点
+        # (6) 获取步进后的空闲core
+        Idle_Core_Set = [state_x for state_x in c_state if (state_x.Core_Finish_Time-current_time_1 <= 0)]
+        # (7) 从就绪节点中选则上处理器执行的不同情况
+        result_list = []
+        for node_x in itertools.combinations(Ready_Node_Set, min(len(Ready_Node_Set), len(Idle_Core_Set))):
+            temp_c_state = copy.deepcopy(c_state)
+            # (8) 更新在选择此node_x上处理器执行的情况下的处理器状态。
+            C_State_2 = self.update(Idle_Core_Set, node_x, current_time_1)
+            BET, BEQ = self.Perfect_scheduling(temp_dag_set, current_time_1, C_State_2)
+            result_list.append({"BET": BET, "BEQ": BEQ})
+        result_list.sort(key=lambda user: user["BET"])  # 根据BET进行排序，[0]为最短执行时间
+        ret_BET, ret_BEQ = self.process(temp_c_state, result_list[0])
+        return ret_BET, ret_BEQ
+
+    # C_State = [   {"Core_ID":"Core_0", "C_state":[{}], "Finish_time":0, "Process_node":node},
+    #               {"Core_ID":"Core_1", "C_state":[{}], "Finish_time":0, "Process_node":node},
+    #               {"Core_ID":"Core_2", "C_state":[{}], "Finish_time":0, "Process_node":node}  ]
     def Perfect_scheduling_1(self, input_core_list, input_dag_set, current_time):
         core_running_list = [core_x for core_x in input_core_list if (core_x.Core_Finish_Time - current_time > 0)]
         if len(core_running_list) > 0:
@@ -152,6 +194,34 @@ class Scheduler(object):
         # 参数x空值X轴的间隔，第二个参数控制每个间隔显示的文本，后面两个参数控制标签的颜色和旋转角度
         plt.show()
 
+
+"""
+# （3）有多种可能的选择，复制不同的core_list 和 DAG_Set，分批迭代，将输出最优的那个作为结果赋值给core_list和dag_set
+else:
+temp_dag_set_list  = [copy.deepcopy(dag_set) for _ in range(len(node_choose_list))]
+temp_core_set_list = [copy.deepcopy(core_list) for _ in range(len(node_choose_list))]
+for x in range(len(node_choose_list)):
+#     for y in range(min(len(ready_node_list), len(Idle_Core_Set))):
+#     temp_ready_node = ready_node_list[x][1]
+#     temp_idle_core = Idle_Core_Set[x]
+#     # 更新运行节点的DAG_ID
+#     temp_idle_core.Current_Running_Node['DAG_ID'] = ready_node_list[x][0]
+#     # 更新运行节点的Node_ID
+#     temp_idle_core.Current_Running_Node['Node_ID'] = temp_ready_node[0]
+#     # 更新完成时间
+#     temp_idle_core.Core_Finish_Time += temp_ready_node[1]['WCET']
+#     # 更新core的运行list
+#     temp_idle_core.Insert_Task_Info(
+#         ready_node_list[x][0],
+#         temp_ready_node[1]['Node_ID'],
+#         current_time,
+#         current_time,
+#         current_time + temp_ready_node[1]['WCET'])
+self.Perfect_scheduling_1(temp_core_set_list[x], temp_dag_set_list[x], current_time)
+# 获取最佳的core_list
+core_list = temp_core_set_list[0]
+dag_set = temp_dag_set_list[0]
+"""
 
 if __name__ == "__main__":
     # ----------------------

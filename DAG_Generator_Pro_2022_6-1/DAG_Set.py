@@ -769,7 +769,7 @@ class DAG_Set:
         # self.Add_DAG(G1_1_2_M)
 
         self.Add_DAG(G1_2_1_M)
-        self.Add_DAG(G1_2_2_M)
+        # self.Add_DAG(G1_2_2_M)
 
         # self.Add_DAG(G2_1_1_M)
         # self.Add_DAG(G2_1_2_M)
