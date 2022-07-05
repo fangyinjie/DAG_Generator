@@ -8,6 +8,7 @@ import Core
 import Metric
 from random import randint
 
+
 class Dispatcher_Workspace(object):
     def __init__(self, env, dag_set, core_num_list):
         self.env            = env           # simpy entity

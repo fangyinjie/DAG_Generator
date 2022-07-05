@@ -15,7 +15,8 @@ class Dispatcher_Workspace(object):
         self.Dag_Set = Dag_Set
         self.core_num = core_num
         self.core_Set = simpy.Resource(env, core_num)  # 类给env配资源
-        self.Dag_Set.Status_Dataup()  # 更新节点状态，所有前驱为0的节点进入就绪态
+        # self.Dag_Set.Status_Dataup()  # 更新节点状态，所有前驱为0的节点进入就绪态
+        self.Dag_Set.Status_Data_Up()
         self.makespan_dict = {}
         self.Temp_DAG_Set = copy.deepcopy(self.Dag_Set)
 
@@ -39,7 +40,7 @@ class Dispatcher_Workspace(object):
                 # step4.记录终止时间
                 end_time = environment.now
                 self.Temp_DAG_Set.delet_DAG_Node(DAG_ID, ready_high_node[0])
-                self.Temp_DAG_Set.Status_Dataup()
+                self.Temp_DAG_Set.Status_Data_Up()
                 # step5.打印，core_ID;
                 # print("Core_ID:{0}, DAG_ID:{1}, node_ID:{2}, start_time:{3}, end_time：{4}".format(
                 #     core_ID, DAG_ID, ready_high_node[1].get('Node_ID'), start_time, end_time))
