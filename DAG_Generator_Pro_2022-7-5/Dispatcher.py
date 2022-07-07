@@ -62,6 +62,7 @@ class Dispatcher_Workspace(object):
         yield env.timeout(run_time)
 
     def show_dag_and_makespan(self):
+
         for x in range(0, len(self.Dag_Set.Dag_Set)):
             posi = 200 + 10 * len(self.Dag_Set.Dag_Set) + (x + 1)
             plt.subplot(posi)
@@ -74,15 +75,16 @@ class Dispatcher_Workspace(object):
                       fontsize=5, color="black", weight="light", ha='left', x=0)
         plt.subplot(212)
         core_channel = 0
+        font_size = 5
         for k, v in self.makespan_dict.items():
             for x in v:
                 plt.barh(y=core_channel * 3, width=x[3] - x[2], height=2, left=x[2], color='grey', edgecolor='black')
-                plt.text(x=x[3], y=core_channel * 3 + 1, s=x[3], fontsize=5)
-                plt.text(x=x[2] + (x[3] - x[2]) / 2, y=core_channel * 3, s='{0}\n{1}'.format(x[0], x[1]), fontsize=5)
-                plt.text(x=x[2], y=core_channel * 3 - 1, s=x[2], fontsize=5)
+                plt.text(x=x[3], y=core_channel * 3 + 1, s=x[3], fontsize=font_size)
+                plt.text(x=x[2] + (x[3] - x[2]) / 2, y=core_channel * 3, s='{0}\n{1}\n{2}'.format(x[0], x[1], (x[3]-x[2])), fontsize=font_size)
+                plt.text(x=x[2], y=core_channel * 3 - 1, s=x[2], fontsize=font_size)
             core_channel += 1
         plt.title("makespan:{0}".format(self.makespan_compute()),
-            fontsize=5, color="black", weight="light", ha='left', x=0)
+            fontsize=font_size, color="black", weight="light", ha='left', x=0)
         plt.show()
 
 
@@ -106,6 +108,6 @@ if __name__ == "__main__":
     # ####### 2.随机生成DAG set ##### #
     # DAG_Set.Random_DAG_Set(DAG_count=4, parallelism_list=[3, 4, 5, 6], critical_path_list=[3, 4, 5, 6])
     # DAG_Set.Random_DAG_Set(DAG_count=1, parallelism_list=[3], critical_path_list=[3])
-    env.process(setup(env, DAG_Set, core_num=4))  # 开始执行!
+    env.process(setup(env, DAG_Set, core_num=3))  # 开始执行!
     env.run(until=10000000)
 

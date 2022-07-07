@@ -474,8 +474,15 @@ class DAG:
                 node_ID = rank_list[z1][z2]
                 sub_node = self.G.nodes[node_ID]
                 n_pos[node_ID] = [(z1 + 0.5) * 120 / len(rank_list), (z2 + 0.5) * 120 / len(rank_list[z1])]
-                n_map[node_ID] = "ID:{0} \n WCET:{1} \n BCET:{2} \n prio:{3} \n Cri:{4}".format(
-                    sub_node.get('Node_ID'), sub_node.get('WCET'), sub_node.get('BCET'), sub_node.get('priority'), sub_node.get('critic'))
+                n_map[node_ID] = \
+                    "ID:{0} \n " \
+                    "WCET:{1} \n " \
+                    "prio:{2} \n " \
+                    "Cri:{3}".format(
+                        sub_node.get('Node_ID'),
+                        sub_node.get('WCET'),
+                        sub_node.get('priority'),
+                        sub_node.get('critic'))
         nx.draw(self.G, n_pos, node_size=800, with_labels=True, labels=n_map, font_size=5, font_color='k')
 
 

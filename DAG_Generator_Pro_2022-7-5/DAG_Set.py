@@ -80,127 +80,118 @@ def he_2019_DAG2():
 # def mode1_case1_scene1_2c1f_huawei():
 
 
-# (1_2) 场景1——2核1流:(我方提出)
-def mode1_case1_scene1_2c1f_mine():
+# (1) 场景1——2核1流:
+def mode1_case1_scene1_2c1f():
     Temp_Dag = nx.DiGraph()
-    Temp_Dag.add_node(1,  Node_ID='Job-29-1', rank=0, critic=False, AVE=569,   BCET=50,    WCET=1500,   priority=1, state='blocked')
-    Temp_Dag.add_node(2,  Node_ID='Job-29-2', rank=0, critic=False, AVE=13507, BCET=10000, WCET=23232,  priority=13,state='blocked')
-    Temp_Dag.add_node(3,  Node_ID='Job-36',   rank=0, critic=False, AVE=14110, BCET=6732,  WCET=30000,  priority=12,state='blocked')
-    Temp_Dag.add_node(4,  Node_ID='Job-4-1',  rank=0, critic=False, AVE=36169, BCET=29656, WCET=45936,  priority=2, state='blocked')
-    Temp_Dag.add_node(5,  Node_ID='Job-35',   rank=0, critic=False, AVE=3619,  BCET=572,   WCET=16772,  priority=14,state='blocked')
-    Temp_Dag.add_node(6,  Node_ID='Job-10',   rank=0, critic=False, AVE=40229, BCET=37752, WCET=46548,  priority=4, state='blocked')
-    Temp_Dag.add_node(7,  Node_ID='Job-4-2',  rank=0, critic=False, AVE=45409, BCET=42724, WCET=51348,  priority=3, state='blocked')
-    Temp_Dag.add_node(8,  Node_ID='Job-4-3',  rank=0, critic=False, AVE=252370,BCET=240724,WCET=269720, priority=5, state='blocked')
-    Temp_Dag.add_node(9,  Node_ID='Job-4-4',  rank=0, critic=False, AVE=103897,BCET=95612, WCET=123376, priority=6, state='blocked')
-    Temp_Dag.add_node(10, Node_ID='Job-11',   rank=0, critic=False, AVE=99335, BCET=89976, WCET=117972, priority=7, state='blocked')
-    Temp_Dag.add_node(11, Node_ID='Job-4-5',  rank=0, critic=False, AVE=17699, BCET=16676, WCET=19316,  priority=8, state='blocked')
-    Temp_Dag.add_node(12, Node_ID='Job-4-6',  rank=0, critic=False, AVE=32609, BCET=30008, WCET=37048,  priority=9, state='blocked')
-    Temp_Dag.add_node(13, Node_ID='Job-12',   rank=0, critic=False, AVE=29889, BCET=27672, WCET=33424,  priority=10,state='blocked')
-    Temp_Dag.add_node(14, Node_ID='Job-4-7',  rank=0, critic=False, AVE=24250, BCET=19712, WCET=31812,  priority=11,state='blocked')
+    # [0] node_num; [1]node_ID; [2]AVET; [3]BCET; [4]WCET; [5]priority;
+    node_list = [[1,  'Job-29-1', 569,       50,         1500,   1 ],
+                 [2,  'Job-29-2', 13507,     10000,      23232,  13],
+                 [3,  'Job-36',   14110,     6732,       30000,  12],
+                 [4,  'Job-4-1',  36169,     29656,      45936,  2 ],
+                 [5,  'Job-35',   3619,      572,        16772,  14],
+                 [6,  'Job-10',   40229,     37752,      46548,  4 ],
+                 [7,  'Job-4-2',  45409,     42724,      51348,  3 ],
+                 [8,  'Job-4-3',  252370,    240724,     269720, 5 ],
+                 [9,  'Job-4-4',  103897,    95612,      123376, 6 ],
+                 [10, 'Job-11',   99335,     89976,      117972, 7 ],
+                 [11, 'Job-4-5',  17699,     16676,      19316,  8 ],
+                 [12, 'Job-4-6',  32609,     30008,      37048,  9 ],
+                 [13, 'Job-12',  29889,      27672,      33424,  10],
+                 [14, 'Job-4-7',   24250,    19712,      31812,  11] ]
+    for node_x in node_list:
+        Temp_Dag.add_node(node_x[0], Node_ID=node_x[1], critic=False, AVET=node_x[2], BCET=node_x[3], WCET=node_x[4],
+                          priority=node_x[5], state='blocked')
 
-    Temp_Dag.add_edge(1,  2,  weight=1)
-    Temp_Dag.add_edge(1,  3,  weight=1)
-    Temp_Dag.add_edge(1,  4,  weight=1)
-    Temp_Dag.add_edge(1,  5,  weight=1)
-    Temp_Dag.add_edge(4,  6,  weight=1)
-    Temp_Dag.add_edge(4,  7,  weight=1)
-    Temp_Dag.add_edge(7,  8,  weight=1)
-    Temp_Dag.add_edge(6,  8,  weight=1)
-    Temp_Dag.add_edge(8,  9,  weight=1)
-    Temp_Dag.add_edge(8,  10, weight=1)
-    Temp_Dag.add_edge(9,  11, weight=1)
-    Temp_Dag.add_edge(10, 11, weight=1)
-    Temp_Dag.add_edge(11, 12, weight=1)
-    Temp_Dag.add_edge(11, 13, weight=1)
-    Temp_Dag.add_edge(13, 14, weight=1)
-    Temp_Dag.add_edge(12, 14, weight=1)
+    edge_list = [(1, 2), (1, 3), (1, 4), (1, 5), (4, 6), (4, 7), (7, 8), (6, 8), (8, 9), (8, 10), (9, 11), (10, 11),
+                 (11, 12), (11, 13), (13, 14), (12, 14)]
+    for edge_x in edge_list:
+        Temp_Dag.add_edge(edge_x[0], edge_x[1], weight=1)
     G = DAG.DAG()
     G.G = Temp_Dag
-    G.DAG_ID = "M1_C1_S1_2C1F_Mine"
+    G.DAG_ID = "M1_C1_S1"
     G.critical_path_config()
     return G
 
 
-# (2_1) 场景2——3核2流:(华为原有)
-# (2_2) 场景2——3核2流:(我方提出)
-def mode1_case1_scene2_3c2f_mine():
-    Temp_Dag2 = nx.DiGraph()
-    Temp_Dag2.add_node(1,  Node_ID='Job-29-1',   rank=0, critic=False, WCET=1500, priority=1, state='blocked')
-    Temp_Dag2.add_node(2,  Node_ID='Job-29-2',   rank=0, critic=False, WCET=34276, priority=26, state='blocked')
-    Temp_Dag2.add_node(3,  Node_ID='Job-36(1)',  rank=0, critic=False, WCET=32220, priority=29, state='blocked')
-    Temp_Dag2.add_node(4,  Node_ID='Job-36(2)',  rank=0, critic=False, WCET=32220, priority=30, state='blocked')
-    Temp_Dag2.add_node(5,  Node_ID='Job-4-1(1)', rank=0, critic=False, WCET=40920, priority=2, state='blocked')
-    Temp_Dag2.add_node(6,  Node_ID='Job-4-1(2)', rank=0, critic=False, WCET=40920, priority=14, state='blocked')
-    Temp_Dag2.add_node(7,  Node_ID='Job-35(1)',  rank=0, critic=False, WCET=20000, priority=31, state='blocked')
-    Temp_Dag2.add_node(8,  Node_ID='Job-35(2)',  rank=0, critic=False, WCET=20000, priority=32, state='blocked')
-    Temp_Dag2.add_node(9,  Node_ID='Job-10(1)',  rank=0, critic=False, WCET=36392, priority=4, state='blocked')
-    Temp_Dag2.add_node(10, Node_ID='Job-10(2)',  rank=0, critic=False, WCET=36392, priority=5, state='blocked')
-    Temp_Dag2.add_node(11, Node_ID='Job-10(3)',  rank=0, critic=False, WCET=36392, priority=16, state='blocked')
-    Temp_Dag2.add_node(12, Node_ID='Job-10(4)',  rank=0, critic=False, WCET=36392, priority=17, state='blocked')
-    Temp_Dag2.add_node(13, Node_ID='Job-4-2(1)', rank=0, critic=False, WCET=36392, priority=3, state='blocked')
-    Temp_Dag2.add_node(14, Node_ID='Job-4-2(2)', rank=0, critic=False, WCET=36392, priority=15, state='blocked')
-    # Temp_Dag2.add_node(13, Node_ID='Job-4-2(1)', rank=0, critic=False, WCET=127908, priority=3, state='blocked')
-    # Temp_Dag2.add_node(14, Node_ID='Job-4-2(2)', rank=0, critic=False, WCET=127908, priority=15, state='blocked')
-    Temp_Dag2.add_node(15, Node_ID='Job-4-3(1)', rank=0, critic=False, WCET=292952, priority=6, state='blocked')
-    Temp_Dag2.add_node(16, Node_ID='Job-4-3(2)', rank=0, critic=False, WCET=292952, priority=18, state='blocked')
-    # Temp_Dag2.add_node(17, Node_ID='Job-4-4(1)', rank=0, critic=False, WCET=172964, priority=7, state='blocked')
-    # Temp_Dag2.add_node(18, Node_ID='Job-4-4(2)', rank=0, critic=False, WCET=172964, priority=19, state='blocked')
-    Temp_Dag2.add_node(17, Node_ID='Job-4-4(1)', rank=0, critic=False, WCET=90936, priority=7, state='blocked')
-    Temp_Dag2.add_node(18, Node_ID='Job-4-4(2)', rank=0, critic=False, WCET=90936, priority=19, state='blocked')
-    Temp_Dag2.add_node(19, Node_ID='Job-11(1)',  rank=0, critic=False, WCET=90936, priority=8, state='blocked')
-    Temp_Dag2.add_node(20, Node_ID='Job-11(2)',  rank=0, critic=False, WCET=90936, priority=9, state='blocked')
-    Temp_Dag2.add_node(21, Node_ID='Job-11(3)',  rank=0, critic=False, WCET=90936, priority=20, state='blocked')
-    Temp_Dag2.add_node(22, Node_ID='Job-11(4)',  rank=0, critic=False, WCET=90936, priority=21, state='blocked')
-    Temp_Dag2.add_node(23, Node_ID='Job-4-5(1)', rank=0, critic=False, WCET=22264, priority=10, state='blocked')
-    Temp_Dag2.add_node(24, Node_ID='Job-4-5(2)', rank=0, critic=False, WCET=22264, priority=22, state='blocked')
-    # Temp_Dag2.add_node(25, Node_ID='Job-4-6(1)', rank=0, critic=False, WCET=126632, priority=11, state='blocked')
-    # Temp_Dag2.add_node(26, Node_ID='Job-4-6(2)', rank=0, critic=False, WCET=126632, priority=23, state='blocked')
-    Temp_Dag2.add_node(25, Node_ID='Job-4-6(1)', rank=0, critic=False, WCET=32136, priority=11, state='blocked')
-    Temp_Dag2.add_node(26, Node_ID='Job-4-6(2)', rank=0, critic=False, WCET=32136, priority=23, state='blocked')
-    Temp_Dag2.add_node(27, Node_ID='Job-12(1)',  rank=0, critic=False, WCET=32136, priority=12, state='blocked')
-    Temp_Dag2.add_node(28, Node_ID='Job-12(2)',  rank=0, critic=False, WCET=32136, priority=13, state='blocked')
-    Temp_Dag2.add_node(29, Node_ID='Job-12(3)',  rank=0, critic=False, WCET=32136, priority=24, state='blocked')
-    Temp_Dag2.add_node(30, Node_ID='Job-12(4)',  rank=0, critic=False, WCET=32136, priority=25, state='blocked')
-    Temp_Dag2.add_node(31, Node_ID='Job-4-7(1)', rank=0, critic=False, WCET=34056, priority=27, state='blocked')
-    Temp_Dag2.add_node(32, Node_ID='Job-4-7(2)', rank=0, critic=False, WCET=34056, priority=28, state='blocked')
+# (2) 场景2——3核2流:
+def mode1_case1_scene2_3c2f():
+    Temp_Dag = nx.DiGraph()
+    # [0] node_num; [1]node_ID; [2]AVET; [3]BCET; [4]WCET; [5]priority;
+    node_list = [[1, 'Job-29-1',     569,       50,        1500,     1],
+                 [2, 'Job-29-2',     23226,     20000,     34276,    26],
+                 [3, 'Job-36(1)',    13730,     5744,      32220,    29],
+                 [4, 'Job-36(2)',    13730,     5744,      32220,    30],
+                 [5, 'Job-4-1(1)',   34908,     29348,     40920,    2],
+                 [6, 'Job-4-1(2)',   34908,     29348,     40920,    14],
+                 [7, 'Job-35(1)',    5066,      624,       20000,    31],
+                 [8, 'Job-35(2)',    5066,      624,       20000,    32],
+                 [9, 'Job-10(1)',    26492,     23088,     36392,    4],
+                 [10, 'Job-10(2)',   26492,     23088,     36392,    5],
+                 [11, 'Job-10(3)',   26492,     23088,     36392,    16],
+                 [12, 'Job-10(4)',   26492,     23088,     36392,    17],
+                 [13, 'Job-4-2(1)',  76423,     56672,     127908,   3],
+                 [14, 'Job-4-2(2)',  76423,     56672,     127908,   15],
+                 [15, 'Job-4-3(1)',  275809,    255508,    292952,   6],
+                 [16, 'Job-4-3(2)',  275809,    255508,    292952,   18],
+                 [17, 'Job-4-4(1)',  144060,    129390,    172964,   7],
+                 [18, 'Job-4-4(2)',  144060,    129390,    172964,   19],
+                 [19, 'Job-11(1)',   67942,     55300,     90936,    8],
+                 [20, 'Job-11(2)',   67942,     55300,     90936,    9],
+                 [21, 'Job-11(3)',   67942,     55300,     90936,    20],
+                 [22, 'Job-11(4)',   67942,     55300,     90936,    21],
+                 [23, 'Job-4-5(1)',  18491,     17116,     22264,    10],
+                 [24, 'Job-4-5(2)',  18491,     17116,     22264,    22],
+                 [25, 'Job-4-6(1)',  94332,     24288,     126632,   11],
+                 [26, 'Job-4-6(2)',  94332,     24288,     126632,   23],
+                 [27, 'Job-12(1)',   18484,     11624,     32136,    12],
+                 [28, 'Job-12(2)',   18484,     11624,     32136,    13],
+                 [29, 'Job-12(3)',   18484,     11624,     32136,    24],
+                 [30, 'Job-12(4)',   18484,     11624,     32136,    25],
+                 [31, 'Job-4-7(1)',  24471,     8712,      34056,    27],
+                 [32, 'Job-4-7(2)',  24471,     8712,      34056,    28]]
 
-    Temp_Dag2.add_edge(1, 2, weight=1)
-    Temp_Dag2.add_edge(1, 3, weight=1)
-    Temp_Dag2.add_edge(1, 4, weight=1)
-    Temp_Dag2.add_edge(1, 5, weight=1)
-    Temp_Dag2.add_edge(1, 6, weight=1)
-    Temp_Dag2.add_edge(1, 7, weight=1)
-    Temp_Dag2.add_edge(1, 8, weight=1)
-    Temp_Dag2.add_edge(5, 9, weight=1)
-    Temp_Dag2.add_edge(5, 10, weight=1)
-    Temp_Dag2.add_edge(5, 13, weight=1)
-    Temp_Dag2.add_edge(6, 11, weight=1)
-    Temp_Dag2.add_edge(6, 12, weight=1)
-    Temp_Dag2.add_edge(6, 14, weight=1)
-    Temp_Dag2.add_edge(9, 15, weight=1)
-    Temp_Dag2.add_edge(10, 15, weight=1)
-    Temp_Dag2.add_edge(13, 15, weight=1)
-    Temp_Dag2.add_edge(11, 16, weight=1)
-    Temp_Dag2.add_edge(12, 16, weight=1)
-    Temp_Dag2.add_edge(14, 16, weight=1)
-    Temp_Dag2.add_edge(15, 17, weight=1)
-    Temp_Dag2.add_edge(15, 19, weight=1)
-    Temp_Dag2.add_edge(15, 20, weight=1)
-    Temp_Dag2.add_edge(16, 18, weight=1)
-    Temp_Dag2.add_edge(16, 21, weight=1)
-    Temp_Dag2.add_edge(16, 22, weight=1)
-    Temp_Dag2.add_edge(17, 23, weight=1)
-    Temp_Dag2.add_edge(18, 24, weight=1)
-    Temp_Dag2.add_edge(19, 23, weight=1)
-    Temp_Dag2.add_edge(20, 23, weight=1)
-    Temp_Dag2.add_edge(21, 24, weight=1)
-    Temp_Dag2.add_edge(22, 24, weight=1)
-    Temp_Dag2.add_edge(23, 25, weight=1)
-    Temp_Dag2.add_edge(23, 27, weight=1)
-    Temp_Dag2.add_edge(23, 28, weight=1)
-    Temp_Dag2.add_edge(24, 26, weight=1)
-    Temp_Dag2.add_edge(24, 29, weight=1)
-    Temp_Dag2.add_edge(24, 30, weight=1)
+    for node_x in node_list:
+        Temp_Dag.add_node(node_x[0], Node_ID=node_x[1], critic=False, AVET=node_x[2], BCET=node_x[3], WCET=node_x[4],
+                          priority=node_x[5], state='blocked')
+
+
+    .(1, 2, weight=1)
+    .(1, 3, weight=1)
+    .(1, 4, weight=1)
+    .(1, 5, weight=1)
+    .(1, 6, weight=1)
+    .(1, 7, weight=1)
+    .(1, 8, weight=1)
+    .(5, 9, weight=1)
+    .(5, 10, weight=1)
+    .(5, 13, weight=1)
+    .(6, 11, weight=1)
+    .(6, 12, weight=1)
+    .(6, 14, weight=1)
+    .(9, 15, weight=1)
+    .(10, 15, weight=1)
+    .(13, 15, weight=1)
+    .(11, 16, weight=1)
+    .(12, 16, weight=1)
+    .(14, 16, weight=1)
+    .(15, 17, weight=1)
+    .(15, 19, weight=1)
+    .(15, 20, weight=1)
+    .(16, 18, weight=1)
+    .(16, 21, weight=1)
+    .(16, 22, weight=1)
+    .(17, 23, weight=1)
+    .(18, 24, weight=1)
+    .(19, 23, weight=1)
+    .(20, 23, weight=1)
+    .(21, 24, weight=1)
+    .(22, 24, weight=1)
+    .(23, 25, weight=1)
+    .(23, 27, weight=1)
+    .(23, 28, weight=1)
+    .(24, 26, weight=1)
+    .(24, 29, weight=1)
+    .add_edge(24, 30, weight=1)
     Temp_Dag2.add_edge(25, 31, weight=1)
     Temp_Dag2.add_edge(27, 31, weight=1)
     Temp_Dag2.add_edge(28, 31, weight=1)
@@ -209,16 +200,14 @@ def mode1_case1_scene2_3c2f_mine():
     Temp_Dag2.add_edge(30, 32, weight=1)
     G = DAG.DAG()
     G.G = Temp_Dag2
-    G.DAG_ID = "M1_C1_S2_3C2F_Mine"
+    G.DAG_ID = "M1_C1_S2"
     G.critical_path_config()
     return G
 
 
 # 2.1.2 情况2
 # (1) 场景1——2核1流:
-# (1_1) 场景1——2核1流:(华为原有)
-# (1_2) 场景1——2核1流:(我方提出)
-def mode1_case2_scene1_2c1f_mine():
+def mode1_case2_scene1_2c1f():
     Temp_Dag = nx.DiGraph()
     Temp_Dag.add_node(1, Node_ID='Job-29-1', rank=0, critic=False, WCET=1500, priority=1, state='blocked')
     Temp_Dag.add_node(2, Node_ID='Job-29-2', rank=0, critic=False, WCET=23232, priority=4, state='blocked')
@@ -233,15 +222,13 @@ def mode1_case2_scene1_2c1f_mine():
 
     G = DAG.DAG()
     G.G = Temp_Dag
-    G.DAG_ID = "M1_C2_S1_2C1F_Mine"
+    G.DAG_ID = "M1_C2_S1"
     G.critical_path_config()
     return G
 
 
 # (2) 场景2——3核2流:
-# (2_1) 场景2——3核2流:(华为原有)
-# (2_2) 场景2——3核2流:(我方提出)
-def mode1_case2_scene2_3c2f_mine():
+def mode1_case2_scene2_3c2f():
     Temp_Dag = nx.DiGraph()
     Temp_Dag.add_node(1, Node_ID='Job-29-1', rank=0, critic=False, WCET=1500, priority=1, state='blocked')
     Temp_Dag.add_node(2, Node_ID='Job-29-2', rank=0, critic=False, WCET=34276, priority=4, state='blocked')
@@ -262,16 +249,15 @@ def mode1_case2_scene2_3c2f_mine():
 
     G = DAG.DAG()
     G.G = Temp_Dag
-    G.DAG_ID = "M1_C2_S2_3C2F_Mine"
+    G.DAG_ID = "M1_C2_S2"
     G.critical_path_config()
     return G
 
 
 # 2.2 模块2
 # 2.2.1 情况1
-# (1_1) 场景1——2核1流:(华为原有)
-# (1_2) 场景1——2核1流:(我方提出)
-def mode2_case1_scene1_2c1f_mine():
+# (1) 场景1——2核1流:
+def mode2_case1_scene1_2c1f():
     Temp_Dag = nx.DiGraph()
     node_list = [[1, 'Job-0(1)',     3032,   1],
                  [2, 'Job-1(1)',     196196, 2],
@@ -286,25 +272,20 @@ def mode2_case1_scene1_2c1f_mine():
                  [11, 'Job-7_4(1)',  52492,  11],
                  [12, 'Job-3-3(1)',  39996,  12]]
     for node_x in node_list:
-        Temp_Dag.add_node(node_x[0], Node_ID=node_x[1], rank=0,
-                critic=False, WCET=node_x[2],
-                priority=node_x[3], state='blocked')
+        Temp_Dag.add_node(node_x[0], Node_ID=node_x[1], rank=0, critic=False, WCET=node_x[2], priority=node_x[3], state='blocked')
 
-    edge_list = [(1, 2), (2, 3), (2, 4), (2, 5), (2, 6),
-             (3, 7), (4, 7), (5, 7), (6, 7),
-             (7, 8), (7, 9), (7, 10), (7, 11), (7, 12)]
+    edge_list = [(1, 2), (2, 3), (2, 4), (2, 5), (2, 6), (3, 7), (4, 7), (5, 7), (6, 7), (7, 8), (7, 9), (7, 10), (7, 11), (7, 12)]
     for edge_x in edge_list:
         Temp_Dag.add_edge(edge_x[0], edge_x[1], weight=1)
     G = DAG.DAG()
     G.G = Temp_Dag
-    G.DAG_ID = "M2_C1_S1_2C1F_Mine"
+    G.DAG_ID = "M2_C1_S1"
     G.critical_path_config()
     return G
 
 
-# (2_1) 场景2——3核2流:(华为原有)
-# (2_2) 场景2——3核2流:(我方提出)
-def mode2_case1_scene2_3c2f_mine():
+# (2) 场景2——3核2流:
+def mode2_case1_scene2_3c2f():
     Temp_Dag = nx.DiGraph()
     node_list = [[1, 'Job-0(2)',        6732,   1],
                  [2, 'Job-1_1(2)',      264088, 2],
@@ -330,10 +311,8 @@ def mode2_case1_scene2_3c2f_mine():
                  [22, 'Job-3-3_1(2)',   55264,  22],
                  [23, 'Job-3-3_2(2)',   55264,  23]]
     for node_x in node_list:
-        Temp_Dag.add_node(node_x[0], Node_ID=node_x[1], rank=0,
-                           critic=False, WCET=node_x[2], priority=node_x[3], state='blocked')
-    edge_list = [(1, 2), (1, 3),
-             (2, 4), (2, 5), (2, 6), (2, 7),
+        Temp_Dag.add_node(node_x[0], Node_ID=node_x[1], rank=0, critic=False, WCET=node_x[2], priority=node_x[3], state='blocked')
+    edge_list = [(1, 2), (1, 3), (2, 4), (2, 5), (2, 6), (2, 7),
              (3, 8), (3, 9), (3, 10), (3, 11),
              (4, 12), (5, 12), (6, 12), (7, 12),
              (8, 13), (9, 13), (10, 13), (11, 13),
@@ -344,14 +323,13 @@ def mode2_case1_scene2_3c2f_mine():
         Temp_Dag.add_edge(edge_x[0], edge_x[1], weight=1)
     G = DAG.DAG()
     G.G = Temp_Dag
-    G.DAG_ID = "M2_C1_S2_3C2F_Mine"
+    G.DAG_ID = "M2_C1_S2"
     G.critical_path_config()
     return G
 
 
-# (3_1) 场景3——5核6流:(华为原有)
-# (3_2) 场景3——5核6流:(我方提出)
-def mode2_case1_scene3_5c6f_mine():
+# (3) 场景3——5核6流:
+def mode2_case1_scene3_5c6f():
     Temp_Dag = nx.DiGraph()
     node_list = [[1, 'Job-0(3)', 10000, 1],
                  [2, 'Job-1_1(3)', 290488, 2],
@@ -392,17 +370,17 @@ def mode2_case1_scene3_5c6f_mine():
                  [37, 'Job-3_2_6(3)', 96008, 37],
                  [38, 'Job 7_1(3)', 87560, 38],
                  [39, 'Job 7_2(3)', 87560, 39],
-                 [40, 'Job 7_3(3)', 87560, 40],
-                 [41, 'Job 7_4(3)', 87560, 41],
-                 [42, 'Job 7_5(3)', 87560, 42],
-                 [43, 'Job 7_6(3)', 87560, 43],
-                 [44, 'Job 7_7(3)', 87560, 44],
-                 [45, 'Job 7_8(3)', 87560, 45],
-                 [46, 'Job 7_9(3)', 87560, 46],
-                 [47, 'Job 7_10(3)', 87560, 47],
-                 [48, 'Job 7_11(3)', 87560, 48],
-                 [49, 'Job 7_12(3)', 87560, 49],
-                 [50, 'Job 7_13(3)', 87560, 50],
+                 [40, 'Job 7_3(3)',     87560,  40],
+                 [41, 'Job 7_4(3)',     87560,  41],
+                 [42, 'Job 7_5(3)',     87560,  42],
+                 [43, 'Job 7_6(3)',     87560,  43],
+                 [44, 'Job 7_7(3)',     87560,  44],
+                 [45, 'Job 7_8(3)',     87560,  45],
+                 [46, 'Job 7_9(3)',     87560,  46],
+                 [47, 'Job 7_10(3)',    87560,  47],
+                 [48, 'Job 7_11(3)',    87560,  48],
+                 [49, 'Job 7_12(3)',    87560,  49],
+                 [50, 'Job 7_13(3)',    87560,  50],
                  [51, 'Job 7_14(3)', 87560, 51],
                  [52, 'Job 7_15(3)', 87560, 52],
                  [53, 'Job 7_16(3)', 87560, 53],
@@ -422,8 +400,7 @@ def mode2_case1_scene3_5c6f_mine():
                  [67, 'Job 3-3_6(3)', 57332, 67]
                  ]
     for node_x in node_list:
-        Temp_Dag.add_node(node_x[0], Node_ID=node_x[1], rank=0,
-                          critic=False, WCET=node_x[2], priority=node_x[3], state='blocked')
+        Temp_Dag.add_node(node_x[0], Node_ID=node_x[1], rank=0, critic=False, WCET=node_x[2], priority=node_x[3], state='blocked')
 
     edge_list = [(1, 2), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12),
                  (2, 3), (2, 4), (2, 5), (2, 6),
@@ -451,35 +428,31 @@ def mode2_case1_scene3_5c6f_mine():
         Temp_Dag.add_edge(edge_x[0], edge_x[1], weight=1)
     G = DAG.DAG()
     G.G = Temp_Dag
-    G.DAG_ID = "M2_C1_S3_5C6F_Mine"
+    G.DAG_ID = "M2_C1_S3"
     G.critical_path_config()
     return G
 
 
 # 2.2.2 情况2
-# (1_1) 场景1——2核1流:(华为原有)
-# (1_2) 场景1——2核1流:(我方提出)
-def mode2_case2_scene1_2c1f_mine():
+# (1) 场景1——2核1流:
+def mode2_case2_scene1_2c1f():
     Temp_Dag = nx.DiGraph()
     node_list = [[1, 'Job-0(1)',    3032, 1],
                  [2, 'Job-3-1(1)', 89840, 2] ]
     for node_x in node_list:
-        Temp_Dag.add_node(node_x[0], Node_ID=node_x[1], rank=0,
-                critic=False, WCET=node_x[2],
-                priority=node_x[3], state='blocked')
+        Temp_Dag.add_node(node_x[0], Node_ID=node_x[1], rank=0, critic=False, WCET=node_x[2], priority=node_x[3], state='blocked')
     edge_list = [(1, 2)]
     for edge_x in edge_list:
         Temp_Dag.add_edge(edge_x[0], edge_x[1], weight=1)
     G = DAG.DAG()
     G.G = Temp_Dag
-    G.DAG_ID = "M2_C2_S1_2C1F_Mine"
+    G.DAG_ID = "M2_C2_S1"
     G.critical_path_config()
     return G
 
 
-# (2_1) 场景2——3核2流:(华为原有)
-# (2_2) 场景2——3核2流:(我方提出)
-def mode2_case2_scene2_3c2f_mine():
+# (2) 场景2——3核2流:
+def mode2_case2_scene2_3c2f():
     Temp_Dag = nx.DiGraph()
     node_list = [[1, 'Job-0(2)',    6732,  1],
                  [2, 'Job-1_1(2)', 108328, 2],
@@ -491,14 +464,13 @@ def mode2_case2_scene2_3c2f_mine():
         Temp_Dag.add_edge(edge_x[0], edge_x[1], weight=1)
     G = DAG.DAG()
     G.G = Temp_Dag
-    G.DAG_ID = "M2_C2_S2_3C2F_Mine"
+    G.DAG_ID = "M2_C2_S2"
     G.critical_path_config()
     return G
 
 
-# (3_1) 场景3——5核6流:(华为原有)
-# (3_2) 场景3——5核6流:(我方提出)
-def mode2_case2_scene3_5c6f_mine():
+# (3) 场景3——5核6流:
+def mode2_case2_scene3_5c6f():
     Temp_Dag = nx.DiGraph()
     node_list = [[1, 'Job-0(3)', 10000, 1],
                  [2, 'Job-1_1(3)', 120000, 2],
@@ -514,7 +486,7 @@ def mode2_case2_scene3_5c6f_mine():
         Temp_Dag.add_edge(edge[0], edge[1], weight=1)
     G = DAG.DAG()
     G.G = Temp_Dag
-    G.DAG_ID = "M2_C2_S3_5C6F"
+    G.DAG_ID = "M2_C2_S3"
     G.critical_path_config()
     return G
 
@@ -608,13 +580,24 @@ class DAG_Set:
                     store.put(simpy.PriorityItem(y[1].get('priority'), (x.DAG_ID,y)))
                     y[1]['state'] = 'ready'
 
+    #####################################
+    #   DAG的优先级配置
+    #####################################
+    def Single_DAG_Priority_Config(self, insert_DAG):
+        temp_node_wcet_1 = nx.get_node_attributes(insert_DAG, 'WCET')
+        temp_node_wcet_2 = dict(sorted(temp_node_wcet_1.items(), key=lambda x: x[1], reverse=True))
+        Temp_1 = 1
+        for k, v in temp_node_wcet_2.items():
+            insert_DAG.node[k]['priority'] = Temp_1
+            Temp_1 += 1
+        return False
+
     def Mulit_DAG_Priority_Config(self):
         if len(self.Dag_Set) > 1:
             node_num_list = []
             for x in self.Dag_Set:
                 node_num_list.append(x.get_node_num())
             max_node_num = max(node_num_list)
-
             for x in self.Dag_Set:
                 temp_pri = x.Priority
                 for y in x.G.nodes(data=True):
@@ -719,16 +702,16 @@ class DAG_Set:
         # he_2019_DAG2
         # self_make_DAG1
         # self_make_DAG2
-        G1_1_1_M = mode1_case1_scene1_2c1f_mine()
-        G1_1_2_M = mode1_case1_scene2_3c2f_mine()
-        G1_2_1_M = mode1_case2_scene1_2c1f_mine()
-        G1_2_2_M = mode1_case2_scene2_3c2f_mine()
-        G2_1_1_M = mode2_case1_scene1_2c1f_mine()
-        G2_1_2_M = mode2_case1_scene2_3c2f_mine()
-        G2_1_3_M = mode2_case1_scene3_5c6f_mine()
-        G2_2_1_M = mode2_case2_scene1_2c1f_mine()
-        G2_2_2_M = mode2_case2_scene2_3c2f_mine()
-        G2_2_3_M = mode2_case2_scene3_5c6f_mine()
+        G1_1_1_M = mode1_case1_scene1_2c1f()
+        G1_1_2_M = mode1_case1_scene2_3c2f()
+        G1_2_1_M = mode1_case2_scene1_2c1f()
+        G1_2_2_M = mode1_case2_scene2_3c2f()
+        G2_1_1_M = mode2_case1_scene1_2c1f()
+        G2_1_2_M = mode2_case1_scene2_3c2f()
+        G2_1_3_M = mode2_case1_scene3_5c6f()
+        G2_2_1_M = mode2_case2_scene1_2c1f()
+        G2_2_2_M = mode2_case2_scene2_3c2f()
+        G2_2_3_M = mode2_case2_scene3_5c6f()
 
         G1_1_1_M.Priority = 2
         G1_1_2_M.Priority = 1
@@ -744,18 +727,30 @@ class DAG_Set:
         G2_2_2_M.Priority = 2
         G2_2_3_M.Priority = 1
 
+        self.Single_DAG_Priority_Config(G1_1_1_M.G)
+        self.Single_DAG_Priority_Config(G1_1_2_M.G)
+        self.Single_DAG_Priority_Config(G1_2_1_M.G)
+        self.Single_DAG_Priority_Config(G1_2_2_M.G)
+
+        self.Single_DAG_Priority_Config(G2_1_1_M.G)
+        self.Single_DAG_Priority_Config(G2_1_2_M.G)
+        self.Single_DAG_Priority_Config(G2_1_3_M.G)
+        self.Single_DAG_Priority_Config(G2_2_1_M.G)
+        self.Single_DAG_Priority_Config(G2_2_2_M.G)
+        self.Single_DAG_Priority_Config(G2_2_3_M.G)
+
         # self.Add_DAG(G1_1_1_M)
         # self.Add_DAG(G1_1_2_M)
 
-        self.Add_DAG(G1_2_1_M)
+        # self.Add_DAG(G1_2_1_M)
         # self.Add_DAG(G1_2_2_M)
 
         # self.Add_DAG(G2_1_1_M)
         # self.Add_DAG(G2_1_2_M)
         # self.Add_DAG(G2_1_3_M)
 
-        # self.Add_DAG(G2_2_1_M)
-        # self.Add_DAG(G2_2_2_M)
+        self.Add_DAG(G2_2_1_M)
+        self.Add_DAG(G2_2_2_M)
         # self.Add_DAG(G2_2_3_M)
         self.Mulit_DAG_Priority_Config()
 
