@@ -10,7 +10,7 @@ class Dispatcher_Workspace(object):
     """ 一个处理器（Processor），拥有特定数量的资源（core，内存，缓存等）。
     一个客户首先申请服务。在对应服务时间完成后结束并离开工作站 """
 
-    def __init__(self, env, Dag_Set, core_num):
+    def __init__(self, env, Dag_Set, core_num, Main_Event):
         self.env = env  # simpy实体
         self.Dag_Set = Dag_Set
         self.core_num = core_num
@@ -19,6 +19,10 @@ class Dispatcher_Workspace(object):
         self.Dag_Set.Status_Data_Up()
         self.makespan_dict = {}
         self.Temp_DAG_Set = copy.deepcopy(self.Dag_Set)
+        self.main_event = Main_Event
+        # self.job_event.succeed('job_finish')
+        # self.job_event = self.env.event()
+        # event.succeed('i was already done')
 
     # 每个core的运作，系统中有几个core就有几个Core_act进程
     def Core_act(self, environment, core_ID):
@@ -35,8 +39,9 @@ class Dispatcher_Workspace(object):
                 start_time = environment.now
                 ready_high_node[1]['state'] = 'running'
                 # step3.运行节点，timeout = WCET
-                WCET = ready_high_node[1].get('WCET')
-                yield environment.process(self.Node_run(WCET))
+                # step3.运行节点，timeout = ET
+                ET = ready_high_node[1].get('ET')
+                yield environment.process(self.Node_run(ET))
                 # step4.记录终止时间
                 end_time = environment.now
                 self.Temp_DAG_Set.delet_DAG_Node(DAG_ID, ready_high_node[0])
@@ -48,7 +53,21 @@ class Dispatcher_Workspace(object):
                     self.makespan_dict[core_ID] = [(DAG_ID, ready_high_node[1].get('Node_ID'), start_time, end_time)]
                 else:
                     self.makespan_dict[core_ID].append((DAG_ID, ready_high_node[1].get('Node_ID'), start_time, end_time))
-        self.show_dag_and_makespan()
+        self.main_event.succeed('task_finish')
+
+    def DAG_Set_volume(self):
+        vol = 0
+        for x in self.Dag_Set.Dag_Set:
+            vol += x.get_dag_volume()
+        return vol
+
+    def CPU_uilization(self, makespan_dict, makespan):
+            core_num = len(makespan_dict)
+            all_execution_time = 0
+            for x in makespan_dict.items():
+                for y in x[1]:
+                    all_execution_time += y[3]-y[2]
+            return all_execution_time / (core_num * makespan)
 
     def makespan_compute(self):
         temp_endtime_list = []
@@ -62,16 +81,16 @@ class Dispatcher_Workspace(object):
         yield env.timeout(run_time)
 
     def show_dag_and_makespan(self):
-
         for x in range(0, len(self.Dag_Set.Dag_Set)):
             posi = 200 + 10 * len(self.Dag_Set.Dag_Set) + (x + 1)
             plt.subplot(posi)
             self.Dag_Set.Dag_Set[x].graph_node_position_determine()
 
-            plt.title("{0}\nrta_non_preempt:{1}\nrta_preempt:{2}".format(
+            plt.title("DAG_ID:{0}\nrta_non_preempt:{1}\nrta_preempt:{2}\nDAG_VOL:{3}:".format(
                         self.Dag_Set.Dag_Set[x].DAG_ID,
                         self.Dag_Set.Dag_Set[x].Response_Time_analysis("non-preemptive", self.core_num),
-                        self.Dag_Set.Dag_Set[x].Response_Time_analysis("preemptive", self.core_num)),
+                        self.Dag_Set.Dag_Set[x].Response_Time_analysis("preemptive", self.core_num),
+                        self.Dag_Set.Dag_Set[x].get_dag_volume()),
                       fontsize=5, color="black", weight="light", ha='left', x=0)
         plt.subplot(212)
         core_channel = 0
@@ -83,31 +102,50 @@ class Dispatcher_Workspace(object):
                 plt.text(x=x[2] + (x[3] - x[2]) / 2, y=core_channel * 3, s='{0}\n{1}\n{2}'.format(x[0], x[1], (x[3]-x[2])), fontsize=font_size)
                 plt.text(x=x[2], y=core_channel * 3 - 1, s=x[2], fontsize=font_size)
             core_channel += 1
-        plt.title("makespan:{0}".format(self.makespan_compute()),
+
+        plt.title("makespan:{0}\nCPU_utilization:{1:2f}\nDAG_VOL:{2}".format(
+            self.makespan_compute(),
+            self.CPU_uilization(self.makespan_dict, self.makespan_compute()),
+            self.DAG_Set_volume()),
             fontsize=font_size, color="black", weight="light", ha='left', x=0)
-        plt.show()
+        # plt.show()
+        plt.savefig('./1.png'.format(1))
+
 
 
 def setup(environment, Dag, core_num):
     """ 创建一个工作站，几个初始客户，然后持续有客户到达. 每隔 t_inter - 2, t_inter + 3分钟（可以自定义）. """
-    Dispatcher = Dispatcher_Workspace(environment, Dag, core_num)  # 分配器建立资源，只要有资源就开始运行
+    main_event = environment.event()
+    Dispatcher = Dispatcher_Workspace(environment, Dag, core_num, main_event)  # 分配器建立资源，只要有资源就开始运行
     for i in range(core_num):
         env.process(Dispatcher.Core_act(env, "core_{0}".format(i)))  # 创建clientNumber个初始客户
     # while Dag_Set.get_node_num() > 0:
     while True:
-        yield env.timeout(100)  # 在仿真过程中持续创建客户 3-8分钟
+        value = yield main_event
+        if value == 'task_finish':
+            print('fyj\n')
+            Dispatcher.show_dag_and_makespan()
+
+            break
+        # yield env.timeout(100)  # 在仿真过程中持续创建客户 3-8分钟
         # env.process(Client(env, 'Client_%d' % i, workstation))
 
 
 if __name__ == "__main__":
-    env = simpy.Environment()  # 创建一个环境并开始仿真
-    # DAG = user_dag()
+    priority_type_list = ['WCET', 'SELF']
     DAG_Set = DAG_Set.DAG_Set()
     # ####### 1.手动DAG set ######## #
-    DAG_Set.user_defined_dag()
+    # DAG_Set.user_defined_dag()
+    DAG_Set.user_defined_dag_self()
     # ####### 2.随机生成DAG set ##### #
     # DAG_Set.Random_DAG_Set(DAG_count=4, parallelism_list=[3, 4, 5, 6], critical_path_list=[3, 4, 5, 6])
     # DAG_Set.Random_DAG_Set(DAG_count=1, parallelism_list=[3], critical_path_list=[3])
-    env.process(setup(env, DAG_Set, core_num=3))  # 开始执行!
-    env.run(until=10000000)
-
+    # for x in priority_type_list:
+    for x in range(1):
+        env = simpy.Environment()  # 创建一个环境并开始仿真
+        DAG_Set.user_defined_priority('WCET')
+        proc = env.process(setup(env, DAG_Set, core_num=2))
+        # env.run(until=100000000)
+        # env.process(my_proc(env))
+        env.run(until=proc)
+        # env.run(env.process(setup(env, DAG_Set, core_num=3)))

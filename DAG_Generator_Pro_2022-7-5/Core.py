@@ -35,7 +35,7 @@ class Core:
     #     # 返回Core_Running_Task列表；
     #     return self.Core_Running_Task
     #
-    # def Insert_Task(self, DAG_ID, Task_ID, Star_Time, WCET, Task_name):
+    # def Insert_Task(self, DAG_ID, Task_ID, Star_Time, WET, Task_name):
     #     # 向Core_Running中加入元素
     #     self.Core_Running_Task.append(
     #         (DAG_ID,     Task_ID,   Star_Time,  WCET,   Star_Time + WCET, Task_name)

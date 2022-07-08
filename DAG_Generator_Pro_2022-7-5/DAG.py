@@ -55,6 +55,13 @@ class DAG:
     def get_node_num(self):
         return self.G.number_of_nodes()
 
+    # #### get the volume of DAG (workload)#### #
+    def get_dag_volume(self):
+        volume = 0
+        for node_x in self.G.nodes(data=True):
+            volume += node_x[1]['ET']
+        return volume
+
     # #### Transitive reduction Function #### #
     #   param:  matrix: Adjacency Matrix
     #   return: A matrix that has been reduced in transitive
@@ -476,11 +483,11 @@ class DAG:
                 n_pos[node_ID] = [(z1 + 0.5) * 120 / len(rank_list), (z2 + 0.5) * 120 / len(rank_list[z1])]
                 n_map[node_ID] = \
                     "ID:{0} \n " \
-                    "WCET:{1} \n " \
+                    "ET:{1} \n " \
                     "prio:{2} \n " \
                     "Cri:{3}".format(
                         sub_node.get('Node_ID'),
-                        sub_node.get('WCET'),
+                        sub_node.get('ET'),
                         sub_node.get('priority'),
                         sub_node.get('critic'))
         nx.draw(self.G, n_pos, node_size=800, with_labels=True, labels=n_map, font_size=5, font_color='k')
